@@ -27,4 +27,7 @@
 *.out
 *.app
 .idea/*
+
+# Cmake generated
 cmake-build-debug/*
+cmake-build-release/*
