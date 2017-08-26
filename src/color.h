@@ -20,7 +20,14 @@ public:
     void operator*=(const float multiplier);
     void operator/=(const float divider);
 
-    float r, g, b;
+    const float& operator[](int index) const { return components[index]; }
+    float& operator[](int index) { return components[index]; }
+
+    union
+    {
+        struct { float r, g, b; };
+        float components[3];
+    };
 };
 
 inline Color operator+(const Color& a, const Color& b)         { return {a.r + b.r,        a.g + b.g,        a.b + b.b       }; }

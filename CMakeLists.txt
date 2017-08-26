@@ -16,7 +16,7 @@ include_directories(${SDL_INCLUDE_DIR})
 # end STL
 
 # define raytracing
-set(SOURCE_FILES src/main.cpp src/color.h src/color.cpp src/utils.h src/constants.h src/vector.cpp src/vector.h src/matrix.cpp src/matrix.h src/camera.cpp src/camera.h src/geometry.cpp src/geometry.h src/sdl.cpp src/sdl.h src/shading.cpp src/shading.h src/ray.h)
+set(SOURCE_FILES src/main.cpp src/color.h src/color.cpp src/utils.h src/constants.h src/vector.cpp src/vector.h src/matrix.cpp src/matrix.h src/camera.cpp src/camera.h src/geometry.cpp src/geometry.h src/sdl.cpp src/sdl.h src/shading.cpp src/shading.h src/ray.h src/bitmap.cpp src/bitmap.h)
 add_executable(raytracing ${SOURCE_FILES})
 
 target_link_libraries(raytracing ${SDL_LIBRARY})

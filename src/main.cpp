@@ -82,7 +82,8 @@ void render()
         }
 }
 
-int main ()
+// don't remove main arguments, it's required by STL
+int main (int argc, char* argv[])
 {
     InitGraphics(RESX, RESY);
 
