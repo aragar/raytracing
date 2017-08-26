@@ -21,6 +21,7 @@ struct Vector
     void Scale(const float multiplier);
     void Normalize() { Scale(1.f / Length()); }
 
+    void operator+=(const Vector& other);
     void operator*=(float multiplier) { Scale(multiplier); }
     void operator/=(float divider) { Scale(1.f/divider); }
 };
@@ -28,7 +29,7 @@ struct Vector
 inline Vector operator+(const Vector& lhs, const Vector& rhs) { return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z}; }
 inline Vector operator-(const Vector& lhs, const Vector& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z}; }
 inline Vector operator-(const Vector& lhs) { return {-lhs.x, -lhs.y, -lhs.z}; }
-inline double operator*(const Vector& lhs, const Vector& rhs) { return (lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z); }
+inline float operator*(const Vector& lhs, const Vector& rhs) { return (lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z); }
 inline Vector operator*(const Vector& lhs, const float multiplier) { return {lhs.x*multiplier, lhs.y*multiplier, lhs.z*multiplier}; }
 inline Vector operator*(const float multiplier, const Vector& rhs) { return {rhs.x*multiplier, rhs.y*multiplier, rhs.z*multiplier}; }
 inline Vector operator/(const Vector& lhs, const float divider) { return {lhs.x/divider, lhs.y/divider, lhs.z/divider}; }

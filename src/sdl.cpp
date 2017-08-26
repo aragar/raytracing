@@ -71,7 +71,7 @@ void WaitForUserExit()
     }
 }
 
-int FrameWidth()
+int GetFrameWidth()
 {
     if ( screen )
         return screen->w;
@@ -79,7 +79,7 @@ int FrameWidth()
     return 0;
 }
 
-int FrameHeight()
+int GetFrameHeight()
 {
     if ( screen )
         return screen->h;

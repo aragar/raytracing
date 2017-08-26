@@ -13,7 +13,7 @@ struct Matrix
 };
 
 Vector operator*(const Vector& lhs, const Matrix& rhs);
-void operator*=(Vector& lhs, const Matrix& rhs) { lhs = lhs*rhs; }
+inline void operator*=(Vector& lhs, const Matrix& rhs) { lhs = lhs*rhs; }
 
 Matrix operator*(const Matrix& lhs, const Matrix& rhs);
 
