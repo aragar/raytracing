@@ -8,17 +8,11 @@
 class Camera
 {
 public:
-    const Vector& GetPosition() const { return m_Position; }
     void SetPosition(const Vector& position) { m_Position = position; }
-    double GetYaw() const { return m_Yaw; }
     void SetYaw(double Yaw) { m_Yaw = Yaw; }
-    double GetPitch() const { return m_Pitch; }
     void SetPitch(double Pitch) { m_Pitch = Pitch; }
-    double GetRoll() const { return m_Roll; }
     void SetRoll(double Roll) { m_Roll = Roll; }
-    double GetAspectRatio() const { return m_AspectRatio; }
     void SetAspectRatio(double AspectRatio) { m_AspectRatio = AspectRatio; }
-    double GetFOV() const { return m_FOV; }
     void SetFOV(double FOV) { m_FOV = FOV; }
 
     void FrameBegin();

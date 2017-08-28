@@ -12,7 +12,7 @@ struct Vector
 
     void Set(double x, double y, double z);
 
-    void MakeZero() { Set(0.f, 0.f, 0.f); }
+    void MakeZero() { Set(0., 0., 0.); }
     void SetLength(double newLength) { Scale(newLength/Length()); }
 
     double Length() const { return sqrtf(x*x + y*y + z*z); }
@@ -26,14 +26,14 @@ struct Vector
     void operator/=(double divider) { Scale(1.f/divider); }
 };
 
-inline Vector operator+(const Vector& lhs, const Vector& rhs) { return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z}; }
-inline Vector operator-(const Vector& lhs, const Vector& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z}; }
-inline Vector operator-(const Vector& lhs) { return {-lhs.x, -lhs.y, -lhs.z}; }
-inline double operator*(const Vector& lhs, const Vector& rhs) { return (lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z); }
-inline Vector operator*(const Vector& lhs, const double multiplier) { return {lhs.x*multiplier, lhs.y*multiplier, lhs.z*multiplier}; }
-inline Vector operator*(const double multiplier, const Vector& rhs) { return {rhs.x*multiplier, rhs.y*multiplier, rhs.z*multiplier}; }
-inline Vector operator/(const Vector& lhs, const double divider) { return {lhs.x/divider, lhs.y/divider, lhs.z/divider}; }
-inline Vector operator^(const Vector& lhs, const Vector& rhs) { return {lhs.y*rhs.z - lhs.z*rhs.y, lhs.z*rhs.x - lhs.x*rhs.z, lhs.x*rhs.y - lhs.y*rhs.x}; }
+inline Vector operator+(const Vector& lhs, const Vector& rhs)       { return { lhs.x + rhs.x,     lhs.y + rhs.y,        lhs.z + rhs.z       }; }
+inline Vector operator-(const Vector& lhs, const Vector& rhs)       { return { lhs.x - rhs.x,     lhs.y - rhs.y,        lhs.z - rhs.z       }; }
+inline Vector operator-(const Vector& lhs)                          { return {-lhs.x,            -lhs.y,               -lhs.z               }; }
+inline double operator*(const Vector& lhs, const Vector& rhs)       { return ( lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z                      ); }
+inline Vector operator*(const Vector& lhs, const double multiplier) { return { lhs.x*multiplier,  lhs.y*multiplier,     lhs.z*multiplier    }; }
+inline Vector operator*(const double multiplier, const Vector& rhs) { return { rhs.x*multiplier,  rhs.y*multiplier,     rhs.z*multiplier    }; }
+inline Vector operator/(const Vector& lhs, const double divider)    { return { lhs.x/divider,     lhs.y/divider,        lhs.z/divider       }; }
+inline Vector operator^(const Vector& lhs, const Vector& rhs)       { return { lhs.y*rhs.z - lhs.z*rhs.y, lhs.z*rhs.x - lhs.x*rhs.z, lhs.x*rhs.y - lhs.y*rhs.x}; }
 
 inline double Dot(const Vector& lhs, const Vector& rhs) { return (lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z); }
 inline Vector Normalize(Vector vector) { vector.Normalize(); return vector; }

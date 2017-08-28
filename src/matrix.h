@@ -8,7 +8,7 @@ struct Matrix
     const static unsigned SIZE = 3;
     double m[SIZE][SIZE];
 
-    Matrix() :Matrix(0.f) {}
+    Matrix() :Matrix(0.) {}
     Matrix(const double diagonal);
 };
 
@@ -20,8 +20,8 @@ Matrix operator*(const Matrix& lhs, const Matrix& rhs);
 Matrix Inverse(const Matrix& a);
 double Determinant(const Matrix& a);
 
-Matrix RotationAroundX(const double angle);
-Matrix RotationAroundY(const double angle);
-Matrix RotationAroundZ(const double angle);
+Matrix RotationAroundX(double angle);
+Matrix RotationAroundY(double angle);
+Matrix RotationAroundZ(double angle);
 
 #endif //RAYTRACING_MATRIX_H

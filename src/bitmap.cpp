@@ -42,7 +42,7 @@ Color Bitmap::GetPixel(int x, int y) const
     if ( !m_Data
          || x < 0 || x >= m_Width
          || y < 0 || y >= m_Height)
-        return {0.f, 0.f, 0.f};
+        return {0, 0, 0};
 
     return m_Data[x + y*m_Width];
 }

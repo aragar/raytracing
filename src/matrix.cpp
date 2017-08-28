@@ -67,10 +67,10 @@ double cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
 Matrix Inverse(const Matrix &a)
 {
     double d = Determinant(a);
-    if ( fabsf(d) < 1e-12 )
+    if ( fabs(d) < 1e-12 )
         return a;
 
-    double rD = 1.f / d;
+    double rD = 1. / d;
 
     Matrix result;
     for ( unsigned i = 0; i < Matrix::SIZE; ++i )
@@ -80,12 +80,12 @@ Matrix Inverse(const Matrix &a)
     return result;
 }
 
-Matrix RotationAroundX(const double angle)
+Matrix RotationAroundX(double angle)
 {
-    double S = sinf(angle);
-    double C = cosf(angle);
+    double S = sin(angle);
+    double C = cos(angle);
 
-    Matrix result(1.f);
+    Matrix result(1.);
     result.m[1][1] = C;
     result.m[2][1] = S;
     result.m[1][2] = -S;
@@ -94,12 +94,12 @@ Matrix RotationAroundX(const double angle)
     return result;
 }
 
-Matrix RotationAroundY(const double angle)
+Matrix RotationAroundY(double angle)
 {
-    double S = sinf(angle);
-    double C = cosf(angle);
+    double S = sin(angle);
+    double C = cos(angle);
 
-    Matrix result(1.f);
+    Matrix result(1.);
     result.m[0][0] = C;
     result.m[2][0] = -S;
     result.m[0][2] = S;
@@ -108,12 +108,12 @@ Matrix RotationAroundY(const double angle)
     return result;
 }
 
-Matrix RotationAroundZ(const double angle)
+Matrix RotationAroundZ(double angle)
 {
-    double S = sinf(angle);
-    double C = cosf(angle);
+    double S = sin(angle);
+    double C = cos(angle);
 
-    Matrix result(1.f);
+    Matrix result(1.);
     result.m[0][0] = C;
     result.m[1][0] = S;
     result.m[0][1] = -S;

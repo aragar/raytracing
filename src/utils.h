@@ -5,20 +5,20 @@
 #include <cmath>
 #include "constants.h"
 
-inline float SignOf(const float x) { return x > 0.f ? +1.f : -1.f; }
-inline float Sqr(const float a) { return a*a; }
+inline double SignOf(const double x) { return x > 0. ? +1. : -1.; }
+inline double Sqr(const double a) { return a*a; }
 
-inline float ToRadians(const float angle) { return angle / 180.f * PI; }
-inline float ToDegrees(const float angle) { return angle / PI * 180.f; }
+inline double ToRadians(const double angle) { return angle / 180. * PI; }
+inline double ToDegrees(const double angle) { return angle / PI * 180.; }
 
-inline float NearestInt(const float x) { return (int) floor(x + 0.5f); }
+inline double NearestInt(const double x) { return (int) floor(x + 0.5); }
 
-inline float Random() { return rand() / (float) RAND_MAX; }
+inline double Random() { return rand() / (double) RAND_MAX; }
 
-inline float Min(const float a, const float b) { return a < b ? a : b; }
-inline float Max(const float a, const float b) { return a > b ? a : b; }
-inline float Clamp(const float x, const float a, const float b) { return Min(Max(x, a), b); }
+inline double Min(const double a, const double b) { return a < b ? a : b; }
+inline double Max(const double a, const double b) { return a > b ? a : b; }
+inline double Clamp(const double x, const double a, const double b) { return Min(Max(x, a), b); }
 
-inline unsigned ConvertTo8Bit(float x) { return NearestInt(Clamp(x, 0.f, 1.f) * 255.f); }
+inline unsigned ConvertTo8Bit(double x) { return NearestInt(Clamp(x, 0.f, 1.f) * 255.f); }
 
 #endif //RAYTRACING_UTILS_H
