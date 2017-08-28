@@ -17,8 +17,8 @@ public:
     float IntensityPerceptual() const { return (r*0.299f + g*0.587f + b*0.114f); }
 
     void operator+=(const Color& rhs);
-    void operator*=(const float multiplier);
-    void operator/=(const float divider);
+    void operator*=(float multiplier);
+    void operator/=(float divider);
 
     const float& operator[](int index) const { return components[index]; }
     float& operator[](int index) { return components[index]; }
@@ -32,8 +32,9 @@ public:
 
 inline Color operator+(const Color& a, const Color& b)         { return {a.r + b.r,        a.g + b.g,        a.b + b.b       }; }
 inline Color operator-(const Color& a, const Color& b)         { return {a.r - b.r,        a.g - b.g,        a.b - b.b       }; }
-inline Color operator*(const Color& a, const float multiplier) { return {a.r * multiplier, a.g * multiplier, a.b * multiplier}; }
+inline Color operator*(const Color& a, const Color& b)         { return {a.r * b.r,        a.g * b.g,        a.b * b.b       }; }
+inline Color operator*(const Color& a, float multiplier)       { return {a.r * multiplier, a.g * multiplier, a.b * multiplier}; }
 inline Color operator*(const float multiplier, const Color& a) { return {a.r * multiplier, a.g * multiplier, a.b * multiplier}; }
-inline Color operator/(const Color& a, const float divider)    { return {a.r / divider,    a.g / divider,    a.b / divider   }; }
+inline Color operator/(const Color& a, float divider)          { return {a.r / divider,    a.g / divider,    a.b / divider   }; }
 
 #endif //RAYTRACING_COLOR_H

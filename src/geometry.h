@@ -8,8 +8,8 @@ struct IntersectionInfo
 {
     Vector ip;
     Vector normal;
-    float distance;
-    float u, v;
+    double distance;
+    double u, v;
 };
 
 class Geometry
@@ -24,7 +24,7 @@ class Plane : public Geometry
 public:
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 
-    float y;
+    double y;
 };
 
 struct Shader;

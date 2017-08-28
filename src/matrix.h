@@ -6,10 +6,10 @@
 struct Matrix
 {
     const static unsigned SIZE = 3;
-    float m[SIZE][SIZE];
+    double m[SIZE][SIZE];
 
     Matrix() :Matrix(0.f) {}
-    Matrix(const float diagonal);
+    Matrix(const double diagonal);
 };
 
 Vector operator*(const Vector& lhs, const Matrix& rhs);
@@ -18,10 +18,10 @@ inline void operator*=(Vector& lhs, const Matrix& rhs) { lhs = lhs*rhs; }
 Matrix operator*(const Matrix& lhs, const Matrix& rhs);
 
 Matrix Inverse(const Matrix& a);
-float Determinant(const Matrix& a);
+double Determinant(const Matrix& a);
 
-Matrix RotationAroundX(const float angle);
-Matrix RotationAroundY(const float angle);
-Matrix RotationAroundZ(const float angle);
+Matrix RotationAroundX(const double angle);
+Matrix RotationAroundY(const double angle);
+Matrix RotationAroundZ(const double angle);
 
 #endif //RAYTRACING_MATRIX_H

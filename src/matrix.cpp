@@ -1,6 +1,6 @@
 #include "matrix.h"
 
-Matrix::Matrix(const float diagonal)
+Matrix::Matrix(const double diagonal)
 {
     for ( unsigned i = 0; i < SIZE; ++i )
         for ( unsigned j = 0; j < SIZE; ++j )
@@ -27,7 +27,7 @@ Matrix operator*(const Matrix& lhs, const Matrix& rhs)
     return result;
 }
 
-float Determinant(const Matrix& a)
+double Determinant(const Matrix& a)
 {
     return (
             a.m[0][0]*a.m[1][1]*a.m[2][2]
@@ -39,7 +39,7 @@ float Determinant(const Matrix& a)
     );
 }
 
-float cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
+double cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
 {
     int rows[Matrix::SIZE - 1];
     int rc = 0;
@@ -54,7 +54,7 @@ float cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
         if ( j != jj )
             cols[cc++] = j;
 
-    float t = (
+    double t = (
             a.m[rows[0]][cols[0]]*a.m[rows[1]][cols[1]] -
             a.m[rows[1]][cols[0]]*a.m[rows[0]][cols[1]]
     );
@@ -66,11 +66,11 @@ float cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
 
 Matrix Inverse(const Matrix &a)
 {
-    float d = Determinant(a);
+    double d = Determinant(a);
     if ( fabsf(d) < 1e-12 )
         return a;
 
-    float rD = 1.f / d;
+    double rD = 1.f / d;
 
     Matrix result;
     for ( unsigned i = 0; i < Matrix::SIZE; ++i )
@@ -80,10 +80,10 @@ Matrix Inverse(const Matrix &a)
     return result;
 }
 
-Matrix RotationAroundX(const float angle)
+Matrix RotationAroundX(const double angle)
 {
-    float S = sinf(angle);
-    float C = cosf(angle);
+    double S = sinf(angle);
+    double C = cosf(angle);
 
     Matrix result(1.f);
     result.m[1][1] = C;
@@ -94,10 +94,10 @@ Matrix RotationAroundX(const float angle)
     return result;
 }
 
-Matrix RotationAroundY(const float angle)
+Matrix RotationAroundY(const double angle)
 {
-    float S = sinf(angle);
-    float C = cosf(angle);
+    double S = sinf(angle);
+    double C = cosf(angle);
 
     Matrix result(1.f);
     result.m[0][0] = C;
@@ -108,10 +108,10 @@ Matrix RotationAroundY(const float angle)
     return result;
 }
 
-Matrix RotationAroundZ(const float angle)
+Matrix RotationAroundZ(const double angle)
 {
-    float S = sinf(angle);
-    float C = cosf(angle);
+    double S = sinf(angle);
+    double C = cosf(angle);
 
     Matrix result(1.f);
     result.m[0][0] = C;

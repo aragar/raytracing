@@ -5,13 +5,13 @@
 
 void Camera::FrameBegin()
 {
-    float wantedAngle = ToRadians(m_FOV/2);
-    float wantedLength = tan(wantedAngle);
-    float actualLength = sqrt(Sqr(m_AspectRatio) + 1.f);
-    float scaleFactor = wantedLength / actualLength;
+    double wantedAngle = ToRadians(m_FOV/2);
+    double wantedLength = tan(wantedAngle);
+    double actualLength = sqrt(Sqr(m_AspectRatio) + 1.f);
+    double scaleFactor = wantedLength / actualLength;
 
-    float x2d = -m_AspectRatio*scaleFactor*1.5f;
-    float y2d = scaleFactor*1.5f;
+    double x2d = -m_AspectRatio*scaleFactor*1.5f;
+    double y2d = scaleFactor*1.5f;
 
     m_Rotation =
             RotationAroundZ(ToRadians(m_Roll)) *
@@ -23,7 +23,7 @@ void Camera::FrameBegin()
     m_BottomLeft = Vector{x2d, -y2d, 1} * m_Rotation + m_Position;
 }
 
-Ray Camera::GetScreenRay(float x, float y) const
+Ray Camera::GetScreenRay(double x, double y) const
 {
     const int frameWidth = GetFrameWidth();
     const int frameHeight = GetFrameHeight();
