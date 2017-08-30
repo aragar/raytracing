@@ -2,7 +2,10 @@
 #define RAYTRACING_SHADING_H
 
 #include "color.h"
-#include "geometry.h"
+
+class IntersectionInfo;
+class Ray;
+class Texture;
 
 class Shader
 {
@@ -11,19 +14,35 @@ public:
     virtual ~Shader() {}
 };
 
-class CheckerShader : public  Shader
+class Lambert : public Shader
 {
 public:
-    const Color& GetColor1() const { return m_Color1; }
-    void SetColor1(const Color& color) { m_Color1 = color; }
-    const Color& GetColor2() const { return  m_Color2; }
-    void SetColor2(const Color& color) { m_Color2 = color; }
+    void SetColor(const Color& color) { m_Color = color; }
+    void SetTexture(Texture* texture) { m_Texture = texture; }
+
+    Lambert();
+    virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+
+private:
+    Color m_Color;
+    Texture* m_Texture;
+};
+
+class Phong : public Shader
+{
+public:
+    void SetColor(const Color& color) { m_Color = color; }
+    void SetTexture(Texture* texture) { m_Texture = texture; }
+    void SetSpecularMultiplier(double multiplier) { m_SpecularMultiplier = multiplier; }
+    void SetSpecularExponent(double exponent) { m_SpecularExponent = exponent; }
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
 private:
-    Color m_Color1;
-    Color m_Color2;
+    Color m_Color;
+    Texture* m_Texture;
+    double m_SpecularMultiplier;
+    double m_SpecularExponent;
 };
 
 #endif //RAYTRACING_SHADING_H

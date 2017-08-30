@@ -1,22 +1,49 @@
 #include "shading.h"
 
+#include "texture.h"
+#include "shadinghelper.h"
+
 extern Vector g_LightPos;
-extern float g_LightIntensity;
+extern Color g_AmbientLight;
 
-Color CheckerShader::Shade(const Ray& ray, const IntersectionInfo& info) const
+Color Lambert::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
-    int x = (int) floorf(info.u / 5.f);
-    int y = (int) floorf(info.v / 5.f);
-
-    const Color& color = ((x + y) % 2 == 0) ? m_Color1 : m_Color2;
+    Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
 
     const Vector& v1 = info.normal;
-    Vector v2 = g_LightPos - info.ip;
-    float distanceToLightSqr = v2.LengthSqr();
-    v2.Normalize();
-    float lambertCoeff = v1*v2;
-    float attenuationCoeff = 1.f / distanceToLightSqr;
+    Vector v2 = Normalize(g_LightPos - info.ip);
+    double lambertCoeff = Dot(v1, v2);
 
-    const Color result = color * lambertCoeff * attenuationCoeff * g_LightIntensity;
+    const double lightContribution = ShadingHelper::GetLightContribution(info);
+    Color result = diffuse*g_AmbientLight + diffuse*lambertCoeff*lightContribution;
+    return result;
+}
+
+Lambert::Lambert()
+: m_Texture(nullptr)
+{
+    m_Color.MakeZero();
+}
+
+Color Phong::Shade(const Ray& ray, const IntersectionInfo& info) const
+{
+    Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
+
+    const Vector& v1 = info.normal;
+    Vector v2 = Normalize(g_LightPos - info.ip);
+    double lamberCoeff = Dot(v1, v2);
+    double lightContribution = ShadingHelper::GetLightContribution(info);
+
+    Vector reflection = Reflect(info.ip - g_LightPos, info.normal);
+    double cosGamma = Dot(-ray.dir, reflection);
+    double phongCoeff = 0;
+    if ( cosGamma > 0. )
+    {
+        phongCoeff = pow(cosGamma, m_SpecularExponent);
+    }
+
+    Color result = g_AmbientLight*diffuse
+                   + diffuse*lamberCoeff*lightContribution
+                   + Color{1.f, 1.f, 1.f}*phongCoeff*m_SpecularMultiplier*lightContribution;
     return result;
 }

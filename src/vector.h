@@ -15,7 +15,7 @@ struct Vector
     void MakeZero() { Set(0., 0., 0.); }
     void SetLength(double newLength) { Scale(newLength/Length()); }
 
-    double Length() const { return sqrtf(x*x + y*y + z*z); }
+    double Length() const { return sqrt(x*x + y*y + z*z); }
     double LengthSqr() const { return (x*x + y*y + z*z); }
 
     void Scale(const double multiplier);

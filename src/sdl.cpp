@@ -1,7 +1,11 @@
 #include "sdl.h"
+#include "camera.h"
 
 #include <cstdio>
 #include <SDL.h>
+
+extern Camera g_Camera;
+extern Vector g_LightPos;
 
 SDL_Surface* screen = nullptr;
 
