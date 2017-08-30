@@ -28,4 +28,19 @@ private:
     Color m_Color2;
 };
 
+class MandelbrotTexture : public Texture
+{
+public:
+    void SetScaling(double Scaling) { m_Scaling = Scaling; }
+    void SetColor1(const Color& Color1) { m_Color1 = Color1; }
+    void SetColor2(const Color& Color2) { m_Color2 = Color2; }
+
+    virtual Color Sample(const IntersectionInfo& info) const override;
+
+private:
+    double m_Scaling;
+    Color m_Color1;
+    Color m_Color2;
+};
+
 #endif //RAYTRACING_TEXTURE_H

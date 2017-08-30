@@ -21,6 +21,7 @@ std::vector<Node> g_Nodes;
 
 Plane g_Floor, g_Ceiling;
 CheckerTexture g_FloorTexture, g_CeilingTexture;
+MandelbrotTexture g_MandelbrotTexture;
 Lambert g_CeilingShader;
 Phong g_FloorShader;
 
@@ -36,7 +37,7 @@ Phong g_GeometryShader;
 void SetupScene()
 {
     // camera
-    g_Camera.SetPosition({35, 60, -100});
+    g_Camera.SetPosition({0, 60, -100});
     g_Camera.SetYaw(0);
     g_Camera.SetPitch(-15);
     g_Camera.SetRoll(0);
@@ -45,9 +46,16 @@ void SetupScene()
 
     // floor
     g_Floor.SetHeight(1);
+
     g_FloorTexture.SetColor1({0, 0, 0.5});
     g_FloorTexture.SetColor2({1, 0.5, 0});
-    g_FloorShader.SetTexture(&g_FloorTexture);
+
+    g_MandelbrotTexture.SetColor1(Color{2037680});
+    g_MandelbrotTexture.SetColor2(Color{2171945});
+    g_MandelbrotTexture.SetScaling(80);
+
+    // g_FloorShader.SetTexture(&g_FloorTexture);
+    g_FloorShader.SetTexture(&g_MandelbrotTexture);
     g_FloorShader.SetSpecularExponent(20);
     g_FloorShader.SetSpecularMultiplier(5.3);
 
@@ -81,7 +89,7 @@ void SetupScene()
     g_Nodes.push_back({ &g_Ceiling, &g_CeilingShader });
     // g_Nodes.push_back({ &g_Cube, &g_GeometryShader });
     // g_Nodes.push_back({ &g_Ball, &g_GeometryShader });
-    g_Nodes.push_back({ csg, &g_GeometryShader });
+    // g_Nodes.push_back({ csg, &g_GeometryShader });
 
     // light
     g_LightPos = {15, 180, -60};
