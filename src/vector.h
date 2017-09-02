@@ -24,6 +24,8 @@ struct Vector
     void operator+=(const Vector& other);
     void operator*=(double multiplier) { Scale(multiplier); }
     void operator/=(double divider) { Scale(1.f/divider); }
+
+    static Vector GetZero() { return {0, 0, 0}; }
 };
 
 inline Vector operator+(const Vector& lhs, const Vector& rhs)       { return { lhs.x + rhs.x,     lhs.y + rhs.y,        lhs.z + rhs.z       }; }
@@ -36,6 +38,7 @@ inline Vector operator/(const Vector& lhs, const double divider)    { return { l
 inline Vector operator^(const Vector& lhs, const Vector& rhs)       { return { lhs.y*rhs.z - lhs.z*rhs.y, lhs.z*rhs.x - lhs.x*rhs.z, lhs.x*rhs.y - lhs.y*rhs.x}; }
 
 inline double Dot(const Vector& lhs, const Vector& rhs) { return (lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z); }
+inline double Cross(const Vector& lhs, const Vector& rhs) { return(lhs.x*rhs.y + lhs.y*rhs.z + lhs.z*rhs.x - lhs.x*rhs.z - lhs.y*rhs.x - lhs.z*rhs.y); }
 inline Vector Normalize(Vector vector) { vector.Normalize(); return vector; }
 
 Vector Reflect(Vector in, const Vector& norm);

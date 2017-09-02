@@ -1,7 +1,6 @@
 #include <algorithm>
+#include <cstdio>
 #include "geometry.h"
-#include "constants.h"
-#include "utils.h"
 
 bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
@@ -203,4 +202,42 @@ bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     }
 
     return false;
+}
+
+bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
+{
+    if ( ray.start.y > m_Center.y && ray.dir.y >= 0. )
+        return false;
+
+    if ( ray.start.y < m_Center.y && ray.dir.y <= 0. )
+        return false;
+
+    double scaleFactor = (m_Center.y - ray.start.y) / ray.dir.y;
+    Vector ip = ray.start + ray.dir*scaleFactor;
+
+    Vector dir = ip - m_Center;
+    double angle = atan2(dir.z, dir.x);
+    if ( angle < 0 )
+        angle += 2*PI;
+
+    double sideAngle = 2*PI/m_Sides;
+    unsigned k1 = angle/sideAngle; // the line between the center and the ip is intersecting the side from k to k+1
+    unsigned k2 = (k1 + 1 == m_Sides ? 0 : k1 + 1);
+
+    Vector vk1{m_Center.x + cos(k1*sideAngle)*m_Radius, m_Center.y, m_Center.z + sin(k1*sideAngle)*m_Radius};
+    Vector vk2{m_Center.x + cos(k2*sideAngle)*m_Radius, m_Center.y, m_Center.z + sin(k2*sideAngle)*m_Radius};
+
+    int s1 = SignOf(Cross(vk1 - m_Center, ip - vk1));
+    int s2 = SignOf(Cross(vk2 - vk1, ip - vk2));
+    int s3 = SignOf(Cross(m_Center - vk2, ip - m_Center));
+    if ( !((s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0)) )
+        return false;
+
+    outInfo.ip = ip;
+    outInfo.distance = scaleFactor;
+    outInfo.normal = {0., ray.start.y > m_Center.y ? 1. : -1., 0.};
+    outInfo.u = ip.x - m_Center.x;
+    outInfo.v = ip.z - m_Center.z;
+
+    return true;
 }

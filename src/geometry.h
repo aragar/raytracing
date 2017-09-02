@@ -4,6 +4,7 @@
 #include <vector>
 #include "vector.h"
 #include "ray.h"
+#include "utils.h"
 
 class Geometry;
 struct IntersectionInfo
@@ -32,11 +33,26 @@ private:
     double m_Height;
 };
 
+class RegularPolygon : public Geometry
+{
+public:
+    void SetCenter(const Vector& center) { m_Center = center; }
+    void SetRadius(double radius) { m_Radius = radius; }
+    void SetSides(unsigned sides) { m_Sides = Max(3, sides); }
+
+    virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
+
+private:
+    Vector m_Center;
+    double m_Radius;
+    unsigned m_Sides;
+};
+
 class Sphere : public Geometry
 {
 public:
-    void SetCenter(const Vector& Center) { m_Center = Center; }
-    void SetRadius(double Radius) { m_Radius = Radius; }
+    void SetCenter(const Vector& center) { m_Center = center; }
+    void SetRadius(double center) { m_Radius = center; }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 
@@ -49,7 +65,7 @@ class Cube : public Geometry
 {
 public:
     void SetCenter(const Vector& center) { m_Center = center; }
-    void SetHalfSide(double HalfSide) { m_HalfSide = HalfSide; }
+    void SetHalfSide(double halfSide) { m_HalfSide = halfSide; }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 
@@ -63,8 +79,8 @@ private:
 class CsgOp : public Geometry
 {
 public:
-    void SetLeft(Geometry* Left) { m_Left = Left; }
-    void SetRight(Geometry* Right) {  m_Right = Right; }
+    void SetLeft(Geometry* left) { m_Left = left; }
+    void SetRight(Geometry* right) {  m_Right = right; }
 
     virtual bool Operator(bool inA, bool inB) const =0;
 

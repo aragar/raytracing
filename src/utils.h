@@ -4,8 +4,9 @@
 #include <cstdlib>
 #include <cmath>
 #include "constants.h"
+#include "vector.h"
 
-inline double SignOf(const double x) { return x > 0. ? +1. : -1.; }
+inline int SignOf(const double x) { return x > 1e-6 ? +1 : (x < -1e-6 ? -1 : 0); }
 inline double Sqr(const double a) { return a*a; }
 
 inline double ToRadians(const double angle) { return angle / 180. * PI; }
@@ -17,8 +18,15 @@ inline double Random() { return rand() / (double) RAND_MAX; }
 
 inline double Min(const double a, const double b) { return a < b ? a : b; }
 inline double Max(const double a, const double b) { return a > b ? a : b; }
+inline double Max(unsigned a, unsigned b) { return a > b ? a : b; }
 inline double Clamp(const double x, const double a, const double b) { return Min(Max(x, a), b); }
 
 inline unsigned ConvertTo8Bit(double x) { return NearestInt(Clamp(x, 0.f, 1.f) * 255.f); }
+
+inline bool IsZero(double a, double eps = 1e-6) { return (-eps <= a && a <= eps); }
+inline bool IsZero(const Vector& a, double eps = 1e-6) { return (IsZero(a.x, eps) && IsZero(a.y, eps) && IsZero(a.z, eps)); }
+
+inline bool AreEqual(double lhs, double rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
+inline bool AreEqual(const Vector& lhs, const Vector& rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
 
 #endif //RAYTRACING_UTILS_H
