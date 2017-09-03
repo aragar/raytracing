@@ -11,6 +11,17 @@ public:
     virtual ~Texture() {}
 };
 
+class ConstantColorTexted : public Texture
+{
+public:
+    void SetColor(const Color& color) { m_Color = color; }
+
+    virtual Color Sample(const IntersectionInfo& info) const override { return m_Color; }
+
+private:
+    Color m_Color;
+};
+
 class CheckerTexture : public Texture
 {
 public:
@@ -41,6 +52,23 @@ private:
     double m_Scaling;
     Color m_Color1;
     Color m_Color2;
+};
+
+class ProceduralTexture : public Texture
+{
+public:
+    ProceduralTexture();
+
+    virtual Color Sample(const IntersectionInfo& info) const override ;
+
+private:
+    static const unsigned NUM = 3;
+
+    Color m_ColorU[NUM];
+    double m_FreqU[NUM];
+
+    Color m_ColorV[NUM];
+    double m_FreqV[NUM];
 };
 
 #endif //RAYTRACING_TEXTURE_H

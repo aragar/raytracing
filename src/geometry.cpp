@@ -16,6 +16,7 @@ bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     outInfo.normal = {0., ray.start.y > m_Height ? 1. : -1., 0.};
     outInfo.u = outInfo.ip.x;
     outInfo.v = outInfo.ip.z;
+    outInfo.geometry = this;
 
     return true;
 }
@@ -238,6 +239,7 @@ bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     outInfo.normal = {0., ray.start.y > m_Center.y ? 1. : -1., 0.};
     outInfo.u = ip.x - m_Center.x;
     outInfo.v = ip.z - m_Center.z;
+    outInfo.geometry = this;
 
     return true;
 }

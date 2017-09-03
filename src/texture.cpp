@@ -1,5 +1,4 @@
 #include "texture.h"
-#include "utils.h"
 
 CheckerTexture::CheckerTexture()
 : m_Scaling(1.)
@@ -44,6 +43,27 @@ Color MandelbrotTexture::Sample(const IntersectionInfo& info) const
         result = 0.25*m_Color1 + 0.75*m_Color2;
     else
         result = m_Color2;
+
+    return result;
+}
+
+ProceduralTexture::ProceduralTexture()
+{
+    for ( unsigned i = 0; i < NUM; ++i )
+    {
+        m_ColorU[i] = {(float)Random(), (float)Random(), (float)Random()};
+        m_FreqU[i] = Random(0.01, 0.25);
+
+        m_ColorV[i] = {(float)Random(), (float)Random(), (float)Random()};
+        m_FreqV[i] = Random(0.01, 0.25);
+    }
+}
+
+Color ProceduralTexture::Sample(const IntersectionInfo& info) const
+{
+    Color result = {0, 0, 0};
+    for ( unsigned i = 0; i < NUM; ++i )
+        result += (m_ColorU[i]*sin(info.u*m_FreqU[i]) + m_ColorV[i]*sin(info.v*m_FreqV[i]));
 
     return result;
 }

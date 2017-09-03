@@ -22,6 +22,7 @@ std::vector<Node> g_Nodes;
 Plane g_Floor, g_Ceiling;
 CheckerTexture g_FloorTexture, g_CeilingTexture;
 MandelbrotTexture g_MandelbrotTexture;
+ProceduralTexture g_ProceduralTexture;
 Lambert g_CeilingShader, g_FloorShader;
 
 Vector g_LightPos;
@@ -65,7 +66,7 @@ void SetupScene()
     g_MandelbrotTexture.SetColor2(Color{2171945});
     g_MandelbrotTexture.SetScaling(80);
 
-    g_FloorShader.SetTexture(&g_FloorTexture);
+    g_FloorShader.SetTexture(&g_ProceduralTexture);
     // g_FloorShader.SetTexture(&g_MandelbrotTexture);
     // g_FloorShader.SetSpecularExponent(20);
 
@@ -103,7 +104,7 @@ void SetupScene()
     g_TriangleTexture.SetScaling(5);
     g_TriangleShader.SetTexture(&g_TriangleTexture);
 
-    g_Square.SetCenter({0, 1.1, -50});
+    g_Square.SetCenter({-2, 1.1, -48});
     g_Square.SetRadius(25);
     g_Square.SetSides(4);
     g_SquareTexture.SetColor1({0, 0, 0});
@@ -111,7 +112,7 @@ void SetupScene()
     g_SquareTexture.SetScaling(5);
     g_SquareeShader.SetTexture(&g_SquareTexture);
 
-    g_Pentagon.SetCenter({50, 1.1, -50});
+    g_Pentagon.SetCenter({52, 1.1, -52});
     g_Pentagon.SetRadius(25);
     g_Pentagon.SetSides(5);
     g_PentagonTexture.SetColor1({0, 0, 0});
@@ -124,13 +125,13 @@ void SetupScene()
     g_Nodes.push_back({ &g_Ceiling, &g_CeilingShader });
     // g_Nodes.push_back({ &g_Cube, &g_GeometryShader });
     // g_Nodes.push_back({ &g_Ball, &g_GeometryShader });
-    // g_Nodes.push_back({ csg, &g_GeometryShader });
     g_Nodes.push_back({ &g_Triangle, &g_TriangleShader });
     g_Nodes.push_back({ &g_Square, &g_SquareeShader });
     g_Nodes.push_back({ &g_Pentagon, &g_PentagonShader });
+    // g_Nodes.push_back({ csg, &g_GeometryShader });
 
     // light
-    g_LightPos = {0, 50, 0};
+    g_LightPos = {0, 180, 0};
     g_LightIntensity = 30000;
     g_AmbientLight = Color{1, 1, 1}*0.1;
 

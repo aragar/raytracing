@@ -14,12 +14,13 @@ inline double ToDegrees(const double angle) { return angle / PI * 180.; }
 
 inline double NearestInt(const double x) { return (int) floor(x + 0.5); }
 
-inline double Random() { return rand() / (double) RAND_MAX; }
-
 inline double Min(const double a, const double b) { return a < b ? a : b; }
 inline double Max(const double a, const double b) { return a > b ? a : b; }
 inline double Max(unsigned a, unsigned b) { return a > b ? a : b; }
 inline double Clamp(const double x, const double a, const double b) { return Min(Max(x, a), b); }
+
+inline double Random() { return rand() / (double) RAND_MAX; }
+inline double Random(double from, double to) { return (Random()*Max(from, to) + Min(from, to)); }
 
 inline unsigned ConvertTo8Bit(double x) { return NearestInt(Clamp(x, 0.f, 1.f) * 255.f); }
 
