@@ -66,7 +66,7 @@ void SetupScene()
     g_MandelbrotTexture.SetColor2(Color{2171945});
     g_MandelbrotTexture.SetScaling(80);
 
-    g_FloorShader.SetTexture(&g_ProceduralTexture);
+    g_FloorShader.SetTexture(&g_FloorTexture);
     // g_FloorShader.SetTexture(&g_MandelbrotTexture);
     // g_FloorShader.SetSpecularExponent(20);
 

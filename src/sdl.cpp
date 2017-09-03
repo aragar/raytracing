@@ -41,7 +41,7 @@ void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE])
     {
         Uint32* row = (Uint32*)((Uint8*) screen->pixels + y*screen->pitch);
         for ( int x = 0; x < screen->w; ++x )
-            row[x] = vfb[y][x].toRGB32(redShift, greenShift, blueShift);
+            row[x] = vfb[y][x].toSRGB32(redShift, greenShift, blueShift);
     }
 
     SDL_Flip(screen);

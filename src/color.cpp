@@ -18,6 +18,17 @@ unsigned Color::toRGB32(int redShift/* = 16*/, int greenShift/* = 8*/, int blueS
     unsigned  red = ConvertTo8Bit(r);
     unsigned  green = ConvertTo8Bit(g);
     unsigned  blue = ConvertTo8Bit(b);
+
+    unsigned rgbColor = (blue << blueShift) | (green << greenShift) | (red << redShift);
+    return rgbColor;
+}
+
+unsigned Color::toSRGB32(int redShift/* = 16*/, int greenShift/* = 8*/, int blueShift/* = 0*/) const
+{
+    unsigned red = ConvertTo8Bit_sRGB(r);
+    unsigned green = ConvertTo8Bit_sRGB(g);
+    unsigned blue = ConvertTo8Bit_sRGB(b);
+
     unsigned rgbColor = (blue << blueShift) | (green << greenShift) | (red << redShift);
     return rgbColor;
 }

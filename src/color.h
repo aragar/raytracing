@@ -9,6 +9,7 @@ public:
     explicit Color(unsigned rgbColor);
 
     unsigned toRGB32(int redShift = 16, int greenShift = 8, int blueShift = 0) const;
+    unsigned toSRGB32(int redShift = 16, int greenShift = 8, int blueShift = 0) const;
 
     void SetColor(float r, float g, float b);
     void MakeZero() { SetColor(0.f, 0.f, 0.f); }
