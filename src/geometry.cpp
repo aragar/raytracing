@@ -21,6 +21,13 @@ bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     return true;
 }
 
+bool Plane::IsInside(const Vector& point) const
+{
+    // parallel to the XZ plane
+    bool result = (point.y == m_Height);
+    return result;
+}
+
 bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
     Vector H = ray.start - m_Center;
@@ -66,6 +73,12 @@ bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     outInfo.geometry = this;
 
     return true;
+}
+
+bool Sphere::IsInside(const Vector& point) const
+{
+    bool result = ((point - m_Center).LengthSqr() <= Sqr(m_Radius));
+    return result;
 }
 
 bool Cube::IntersectSide(double level, double start, double dir, const Ray& ray, const Vector& normal, IntersectionInfo& outInfo) const
@@ -115,94 +128,64 @@ bool Cube::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     return result;
 }
 
-void CsgOp::FindAllIntersections(Ray ray, const Geometry& geometry, std::vector<IntersectionInfo>& ips) const
+bool Cube::IsInside(const Vector& point) const
 {
-    IntersectionInfo outInfo;
-    int counter = 30;
-    while ( geometry.Intersect(ray, outInfo)  && counter-- > 0 )
-    {
-        ips.push_back(outInfo);
-        ray.start = outInfo.ip + ray.dir*1e-6;
-    }
-
-    for ( unsigned i = 1; i < ips.size(); ++i )
-        ips[i].distance += ips[i - 1].distance + 1e-6;
-}
-
-std::vector<IntersectionInfo> MergeInfos(const std::vector<IntersectionInfo>& lhs, const std::vector<IntersectionInfo>& rhs)
-{
-    std::vector<IntersectionInfo> allInfos;
-    allInfos.reserve(lhs.size() + rhs.size());
-    for ( unsigned i = 0, j = 0; i < lhs.size() || j < rhs.size(); )
-    {
-        if ( i == lhs.size() )
-        {
-            allInfos.push_back(rhs[j]);
-            ++j;
-        }
-        else if ( j == rhs.size() )
-        {
-            allInfos.push_back(lhs[i]);
-            ++i;
-        }
-        else if ( lhs[i].distance <= rhs[j].distance )
-        {
-            allInfos.push_back(lhs[i]);
-            ++i;
-        }
-        else
-        {
-            allInfos.push_back(rhs[j]);
-            ++j;
-        }
-    }
-
-    return allInfos;
-}
-
-std::vector<IntersectionInfo> SortInfos(const std::vector<IntersectionInfo>& lhs, const std::vector<IntersectionInfo>& rhs)
-{
-    std::vector<IntersectionInfo> allInfos = lhs;
-    allInfos.insert(allInfos.end(), rhs.begin(), rhs.end());
-
-    std::sort(allInfos.begin(), allInfos.end(),
-                [](const IntersectionInfo& left, const IntersectionInfo& right)
-                {
-                    return left.distance <= right.distance;
-                });
-
-    return allInfos;
+    bool result = AreEqual(point.x, m_Center.x, m_HalfSide);
+    result &= AreEqual(point.y, m_Center.y, m_HalfSide);
+    result &= AreEqual(point.z, m_Center.z, m_HalfSide);
+    return result;
 }
 
 bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
-    std::vector<IntersectionInfo> leftInfos, rightInfos;
-    FindAllIntersections(ray, *m_Left, leftInfos);
-    FindAllIntersections(ray, *m_Right, rightInfos);
+    IntersectionInfo leftInfo;
+    IntersectionInfo rightInfo;
 
-    bool inA = leftInfos.size() % 2 == 0 ? false : true;
-    bool inB = rightInfos.size() % 2 == 0 ? false : true;
-
-    std::vector<IntersectionInfo> allInfos = MergeInfos(leftInfos, rightInfos);
-//    std::vector<IntersectionInfo> allInfos = SortInfos(leftInfos, rightInfos);
-
+    bool inA = m_Left->IsInside(ray.start);
+    bool inB = m_Right->IsInside(ray.start);
     bool currentPredicate = Operator(inA, inB);
-    for ( const IntersectionInfo& info : allInfos )
+
+    bool leftIntersection = m_Left->Intersect(ray, leftInfo);
+    bool rightIntersection = m_Right->Intersect(ray, rightInfo);
+
+    bool result = false;
+    while ( leftIntersection || rightIntersection )
     {
-        if ( info.geometry == m_Left )
+        if ( leftIntersection && (!rightIntersection || leftInfo.distance <= rightInfo.distance) )
+        {
             inA = !inA;
-        else if ( info.geometry == m_Right )
+            bool nextPredicate = Operator(inA, inB);
+            if ( nextPredicate != currentPredicate )
+            {
+                outInfo = leftInfo;
+                result = true;
+                break;
+            }
+
+            double prevDist = leftInfo.distance;
+            leftIntersection = m_Left->Intersect({leftInfo.ip + ray.dir*1e-6, ray.dir}, leftInfo);
+            if ( leftIntersection )
+                leftInfo.distance += prevDist + 1e-6;
+        }
+        else if ( rightIntersection && (!leftIntersection || rightInfo.distance <= leftInfo.distance) )
+        {
             inB = !inB;
+            bool nextPredicate = Operator(inA, inB);
+            if ( nextPredicate != currentPredicate )
+            {
+                outInfo = rightInfo;
+                result = true;
+                break;
+            }
 
-        bool nextPredicate = Operator(inA, inB);
-        if ( nextPredicate == currentPredicate )
-            continue;
-
-        outInfo = info;
-        return true;
+            double prevDist = rightInfo.distance;
+            rightIntersection = m_Right->Intersect({rightInfo.ip + ray.dir*1e-6, ray.dir}, rightInfo);
+            if ( rightIntersection )
+                rightInfo.distance += prevDist + 1e-6;
+        }
     }
 
-    return false;
+    return result;
 }
 
 bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -242,4 +225,11 @@ bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     outInfo.geometry = this;
 
     return true;
+}
+
+bool RegularPolygon::IsInside(const Vector& point) const
+{
+    // parallel to the XZ plane
+    bool result = (point.y == m_Center.y);
+    return result;
 }

@@ -20,6 +20,7 @@ class Geometry
 {
 public:
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const =0;
+    virtual bool IsInside(const Vector& point) const { return false; }
     virtual ~Geometry() {}
 };
 
@@ -28,6 +29,7 @@ class Plane : public Geometry
 public:
     void SetHeight(double height) { m_Height = height; }
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
+    virtual bool IsInside(const Vector& point) const override;
 
 private:
     double m_Height;
@@ -41,6 +43,7 @@ public:
     void SetSides(unsigned sides) { m_Sides = Max(3, sides); }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
+    virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
@@ -55,6 +58,7 @@ public:
     void SetRadius(double center) { m_Radius = center; }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
+    virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
@@ -68,6 +72,7 @@ public:
     void SetHalfSide(double halfSide) { m_HalfSide = halfSide; }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
+    virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
@@ -88,7 +93,6 @@ private:
     Geometry* m_Left;
     Geometry* m_Right;
 
-    void FindAllIntersections(Ray ray, const Geometry& geometry, std::vector<IntersectionInfo>& ips) const;
     bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 };
 

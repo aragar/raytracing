@@ -49,23 +49,20 @@ Lambert g_PentagonShader;
 void SetupScene()
 {
     // camera
-    g_Camera.SetPosition({0, 60, -100});
+    g_Camera.SetPosition({0, 165, 0});
     g_Camera.SetYaw(0);
-    g_Camera.SetPitch(-30);
+    g_Camera.SetPitch(-15);
     g_Camera.SetRoll(0);
     g_Camera.SetFOV(90);
     g_Camera.SetAspectRatio((double)GetFrameWidth() / GetFrameHeight());
 
     // floor
     g_Floor.SetHeight(1);
-
     g_FloorTexture.SetColor1({0, 0, 0});
     g_FloorTexture.SetColor2({0, 0, 1});
-
     g_MandelbrotTexture.SetColor1(Color{2037680});
     g_MandelbrotTexture.SetColor2(Color{2171945});
     g_MandelbrotTexture.SetScaling(80);
-
     g_FloorShader.SetTexture(&g_FloorTexture);
     // g_FloorShader.SetTexture(&g_MandelbrotTexture);
     // g_FloorShader.SetSpecularExponent(20);
@@ -121,19 +118,76 @@ void SetupScene()
     g_PentagonShader.SetTexture(&g_PentagonTexture);
 
     // world geometry
-    g_Nodes.push_back({ &g_Floor, &g_FloorShader });
-    g_Nodes.push_back({ &g_Ceiling, &g_CeilingShader });
+    // g_Nodes.push_back({ &g_Floor, &g_FloorShader });
+    // g_Nodes.push_back({ &g_Ceiling, &g_CeilingShader });
     // g_Nodes.push_back({ &g_Cube, &g_GeometryShader });
     // g_Nodes.push_back({ &g_Ball, &g_GeometryShader });
-    g_Nodes.push_back({ &g_Triangle, &g_TriangleShader });
-    g_Nodes.push_back({ &g_Square, &g_SquareeShader });
-    g_Nodes.push_back({ &g_Pentagon, &g_PentagonShader });
+    // g_Nodes.push_back({ &g_Triangle, &g_TriangleShader });
+    // g_Nodes.push_back({ &g_Square, &g_SquareeShader });
+    // g_Nodes.push_back({ &g_Pentagon, &g_PentagonShader });
     // g_Nodes.push_back({ csg, &g_GeometryShader });
 
     // light
-    g_LightPos = {0, 180, 0};
-    g_LightIntensity = 30000;
-    g_AmbientLight = Color{1, 1, 1}*0.1;
+    g_LightPos = {-90, 700, -350};
+    g_LightIntensity = 800000;
+    g_AmbientLight = Color{1, 1, 1}*0.2;
+
+    // new scene
+    Plane* plane = new Plane;
+    CheckerTexture* checkerTexture = new CheckerTexture;
+    checkerTexture->SetColor1({1, 1, 1});
+    checkerTexture->SetColor2({0, 0, 0});
+    checkerTexture->SetScaling(7);
+    Lambert* lambert = new Lambert;
+    lambert->SetColor({1, 1, 1});
+    lambert->SetTexture(checkerTexture);
+    g_Nodes.push_back({ plane, lambert });
+
+    const Uint32 colors[9] = {
+            0xff2222, 0xaa4444, 0x886666,
+            0x22ff22, 0x44aa44, 0x668866,
+            0x2222ff, 0x4444aa, 0x666699,
+    };
+
+    for ( int y = 0; y < 3; ++y )
+        for ( int x = 0; x < 3; ++x )
+        {
+            Vector center = Vector((x - 1)*80, y*80 + 25, 200);
+            Sphere* sphere = new Sphere;
+            sphere->SetCenter(center);
+            sphere->SetRadius(29 + 5*x);
+            Cube* cube = new Cube;
+            cube->SetCenter(center + ((y == 2) ? Vector(0, 0, -35) : Vector(0, 0, 0)));
+            cube->SetHalfSide(y == 2 ? 10 : 35);
+            CsgOp* diff;
+            switch (y)
+            {
+            case 0:
+                diff = new CsgMinus;
+                diff->SetLeft(cube);
+                diff->SetRight(sphere);
+                break;
+            case 1:
+                diff = new CsgAnd;
+                diff->SetLeft(cube);
+                diff->SetRight(sphere);
+                break;
+            case 2:
+                diff = new CsgMinus;
+                diff->SetLeft(sphere);
+                diff->SetRight(cube);
+                break;
+            default:
+                break;
+            }
+
+            Phong* phong = new Phong;
+            phong->SetColor(Color{colors[y*3 + x]});
+            phong->SetSpecularExponent(60);
+            phong->SetSpecularMultiplier(1);
+            phong->SetTexture(nullptr);
+            g_Nodes.push_back({ diff, phong });
+        }
 
     // start
     g_Camera.FrameBegin();
