@@ -141,12 +141,12 @@ bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     IntersectionInfo leftInfo;
     IntersectionInfo rightInfo;
 
-    bool inA = m_Left->IsInside(ray.start);
-    bool inB = m_Right->IsInside(ray.start);
+    bool inA = m_Left && m_Left->IsInside(ray.start);
+    bool inB = m_Right && m_Right->IsInside(ray.start);
     bool currentPredicate = Operator(inA, inB);
 
-    bool leftIntersection = m_Left->Intersect(ray, leftInfo);
-    bool rightIntersection = m_Right->Intersect(ray, rightInfo);
+    bool leftIntersection = m_Left && m_Left->Intersect(ray, leftInfo);
+    bool rightIntersection = m_Right && m_Right->Intersect(ray, rightInfo);
 
     bool result = false;
     while ( leftIntersection || rightIntersection )
