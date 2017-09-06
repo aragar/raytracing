@@ -20,7 +20,7 @@ class Geometry
 {
 public:
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const =0;
-    virtual bool IsInside(const Vector& point) const { return false; }
+    virtual bool IsInside(const Vector& point) const =0;
     virtual ~Geometry() {}
 };
 
@@ -88,6 +88,7 @@ public:
     void SetRight(Geometry* right) {  m_Right = right; }
 
     virtual bool Operator(bool inA, bool inB) const =0;
+    virtual bool IsInside(const Vector& point) const override;
 
 private:
     Geometry* m_Left;

@@ -188,6 +188,14 @@ bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     return result;
 }
 
+bool CsgOp::IsInside(const Vector& point) const
+{
+    bool inA = (m_Left && m_Left->IsInside(point));
+    bool inB = (m_Right && m_Right->IsInside(point));
+    bool result = Operator(inA, inB);
+    return result;
+}
+
 bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
     if ( ray.start.y > m_Center.y && ray.dir.y >= 0. )
