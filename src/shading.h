@@ -38,11 +38,19 @@ public:
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
-private:
+protected:
+    virtual double GetCoeff(const Ray& ray, const IntersectionInfo& info) const;
+
     Color m_Color;
     Texture* m_Texture;
     double m_SpecularMultiplier;
     double m_SpecularExponent;
+};
+
+class BlinnPhong : public Phong
+{
+protected:
+    virtual double GetCoeff(const Ray& ray, const IntersectionInfo& info) const override;
 };
 
 #endif //RAYTRACING_SHADING_H

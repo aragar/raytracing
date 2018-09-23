@@ -12,7 +12,7 @@
 
 #define  COUNT_OF(arr) int((sizeof(arr)) / sizeof(arr[0]))
 
-bool wantAA = false;
+bool wantAA = true;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
 
@@ -181,12 +181,12 @@ void SetupScene()
                 break;
             }
 
-            Phong* phong = new Phong;
-            phong->SetColor(Color{colors[y*3 + x]});
-            phong->SetSpecularExponent(60);
-            phong->SetSpecularMultiplier(1);
-            phong->SetTexture(nullptr);
-            g_Nodes.push_back({ diff, phong });
+            Phong* shader = (x == 1 && y == 1) ? new BlinnPhong : new Phong;
+            shader->SetColor(Color{colors[y*3 + x]});
+            shader->SetSpecularExponent(60);
+            shader->SetSpecularMultiplier(1);
+            shader->SetTexture(nullptr);
+            g_Nodes.push_back({ diff, shader });
         }
 
     // start
