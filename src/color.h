@@ -4,7 +4,7 @@
 struct Color
 {
 public:
-    Color() {}
+    Color() { MakeZero(); }
     Color(float r, float g, float b);
     explicit Color(unsigned rgbColor);
 
