@@ -11,7 +11,7 @@ public:
     virtual ~Texture() {}
 };
 
-class ConstantColorTexted : public Texture
+class ConstantColorTexture : public Texture
 {
 public:
     void SetColor(const Color& color) { m_Color = color; }

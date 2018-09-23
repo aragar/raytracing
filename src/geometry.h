@@ -55,7 +55,7 @@ class Sphere : public Geometry
 {
 public:
     void SetCenter(const Vector& center) { m_Center = center; }
-    void SetRadius(double center) { m_Radius = center; }
+    void SetRadius(double radius) { m_Radius = radius; }
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
