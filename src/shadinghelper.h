@@ -3,11 +3,12 @@
 
 class IntersectionInfo;
 class Vector;
+class Light;
 
 class ShadingHelper
 {
 public:
-    static double GetLightContribution(const IntersectionInfo& info);
+    static double GetLightContribution(const IntersectionInfo& info, const Light& light);
 
 private:
     static bool CheckVisibility(const Vector& start, const Vector& end);

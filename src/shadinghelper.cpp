@@ -2,21 +2,19 @@
 
 #include <vector>
 #include "geometry.h"
-
-extern Vector g_LightPos;
-extern double g_LightIntensity;
+#include "shading.h"
 
 extern std::vector<Node> g_Nodes;
 
-double ShadingHelper::GetLightContribution(const IntersectionInfo& info)
+double ShadingHelper::GetLightContribution(const IntersectionInfo& info, const Light& light)
 {
-    double distanceToLightSqr = (info.ip - g_LightPos).LengthSqr();
+    double distanceToLightSqr = (info.ip - light.pos).LengthSqr();
 
     Vector start = info.ip + info.normal*1e-6;
-    if ( !ShadingHelper::CheckVisibility(start, g_LightPos) )
+    if ( !ShadingHelper::CheckVisibility(start, light.pos) )
         return 0;
 
-    double lightContribution = g_LightIntensity / distanceToLightSqr;
+    double lightContribution = light.intensity / distanceToLightSqr;
     return lightContribution;
 }
 

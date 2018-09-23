@@ -2,10 +2,17 @@
 #define RAYTRACING_SHADING_H
 
 #include "color.h"
+#include "vector.h"
 
 class IntersectionInfo;
 class Ray;
 class Texture;
+
+struct Light
+{
+    Vector pos;
+    double intensity;
+};
 
 class Shader
 {
@@ -39,7 +46,7 @@ public:
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
 protected:
-    virtual double GetCoeff(const Ray& ray, const IntersectionInfo& info) const;
+    virtual double GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const;
 
     Color m_Color;
     Texture* m_Texture;
@@ -50,7 +57,7 @@ protected:
 class BlinnPhong : public Phong
 {
 protected:
-    virtual double GetCoeff(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual double GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const override;
 };
 
 #endif //RAYTRACING_SHADING_H

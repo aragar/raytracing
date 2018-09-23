@@ -25,8 +25,7 @@ MandelbrotTexture g_MandelbrotTexture;
 ProceduralTexture g_ProceduralTexture;
 Lambert g_CeilingShader, g_FloorShader;
 
-Vector g_LightPos;
-double g_LightIntensity;
+std::vector<Light> g_Lights;
 Color g_AmbientLight;
 
 Cube g_Cube;
@@ -49,7 +48,7 @@ Lambert g_PentagonShader;
 void SetupScene()
 {
     // camera
-    g_Camera.SetPosition({0, 165, 0});
+    g_Camera.SetPosition({0, 200, -50});
     g_Camera.SetYaw(0);
     g_Camera.SetPitch(-15);
     g_Camera.SetRoll(0);
@@ -128,8 +127,8 @@ void SetupScene()
     // g_Nodes.push_back({ csg, &g_GeometryShader });
 
     // light
-    g_LightPos = {-90, 700, -350};
-    g_LightIntensity = 800000;
+    g_Lights.push_back(Light{{600, 700, -350}, 800000});
+    g_Lights.push_back(Light{{-600, 700, -350}, 800000});
     g_AmbientLight = Color{1, 1, 1}*0.2;
 
     // new scene
@@ -137,7 +136,7 @@ void SetupScene()
     CheckerTexture* checkerTexture = new CheckerTexture;
     checkerTexture->SetColor1({1, 1, 1});
     checkerTexture->SetColor2({0, 0, 0});
-    checkerTexture->SetScaling(7);
+    checkerTexture->SetScaling(0.1);
     Lambert* lambert = new Lambert;
     lambert->SetColor({1, 1, 1});
     lambert->SetTexture(checkerTexture);
@@ -152,10 +151,10 @@ void SetupScene()
     for ( int y = 0; y < 3; ++y )
         for ( int x = 0; x < 3; ++x )
         {
-            Vector center = Vector((x - 1)*80, y*80 + 25, 200);
+            Vector center = Vector((x - 1)*100, y*100 + 25, 200);
             Sphere* sphere = new Sphere;
             sphere->SetCenter(center);
-            sphere->SetRadius(29 + 5*x);
+            sphere->SetRadius(29 + 7*x);
             Cube* cube = new Cube;
             cube->SetCenter(center + ((y == 2) ? Vector(0, 0, -35) : Vector(0, 0, 0)));
             cube->SetHalfSide(y == 2 ? 10 : 35);
@@ -222,18 +221,19 @@ Color Raytrace(const Ray& ray)
 void render()
 {
     const double kernel[5][2] = {
-            { 0.0, 0.0 },
-            { 0.6, 0.0 },
-            { 0.0, 0.6 },
-            { 0.3, 0.3 },
-            { 0.6, 0.6 }
+            {0.0, 0.0},
+            {0.6, 0.0},
+            {0.0, 0.6},
+            {0.3, 0.3},
+            {0.6, 0.6}
     };
     const int kernelSize = COUNT_OF(kernel);
 
     int frameWidth = GetFrameWidth();
     int frameHeight = GetFrameHeight();
-    for  ( int y = 0; y < frameHeight; ++y )
+    for ( int y = 0; y < frameHeight; ++y )
         for ( int x = 0; x < frameWidth; ++x )
+        {
             if ( wantAA )
             {
                 Color result(0, 0, 0);
@@ -243,13 +243,14 @@ void render()
                     result += Raytrace(ray);
                 }
 
-                vfb[y][x] = result/double(kernelSize);
+                vfb[y][x] = result / double(kernelSize);
             }
             else
             {
                 Ray ray = g_Camera.GetScreenRay(x, y);
                 vfb[y][x] = Raytrace(ray);
             }
+        }
 }
 
 // don't remove main arguments, it's required by STL
