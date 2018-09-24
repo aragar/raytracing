@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cmath>
+#include <string>
 #include "constants.h"
 #include "vector.h"
 
@@ -31,5 +32,19 @@ inline bool IsZero(const Vector& a, double eps = 1e-6) { return (IsZero(a.x, eps
 
 inline bool AreEqual(double lhs, double rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
 inline bool AreEqual(const Vector& lhs, const Vector& rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
+
+std::string UpCaseString(std::string s);
+std::string ExtensionUpper(const char* filename);
+
+class FileRAII {
+    FILE* held;
+public:
+    FileRAII(FILE* init): held(init) {}
+    ~FileRAII() { if (held) fclose(held); held = NULL; }
+    FileRAII(const FileRAII&) = delete;
+    FileRAII& operator = (const FileRAII&) = delete;
+    FileRAII(const FileRAII&&) = delete;
+    FileRAII& operator = (const FileRAII&&) = delete;
+};
 
 #endif //RAYTRACING_UTILS_H

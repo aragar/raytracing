@@ -1,8 +1,14 @@
 #include "bitmap.h"
 #include "constants.h"
+#include "utils.h"
 
 #include <cstring>
 #include <cstdio>
+#include <ImfRgbaFile.h>
+#include <ImfArray.h>
+#include <Iex.h>
+#include <vector>
+
 
 Bitmap::Bitmap()
 : m_Width(-1),
@@ -155,7 +161,7 @@ bool Bitmap::LoadBMP(const char* filename)
     }
     // header is ok
 
-    // if image is 8 bits per pixel or less (indexed mode), read some palette data
+    // if image is 8 bits per pixel or less (indexed mode), read some palette m_Data
     int toread = 0;
     Color palette[256];
     if ( hi.bitsperpixel == 8 )
@@ -258,4 +264,75 @@ bool Bitmap::SaveBMP(const char* filename)
 
     fclose(fp);
     return true;
+}
+
+bool Bitmap::LoadEXR(const char* filename)
+{
+    try
+    {
+        Imf::RgbaInputFile exr(filename);
+        Imf::Array2D<Imf::Rgba> pixels;
+        Imath::Box2i dw = exr.dataWindow();
+        m_Width  = dw.max.x - dw.min.x + 1;
+        m_Height = dw.max.y - dw.min.y + 1;
+        pixels.resizeErase(m_Height, m_Width);
+        exr.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * m_Width, 1, m_Width);
+        exr.readPixels(dw.min.y, dw.max.y);
+        m_Data = new Color[m_Width * m_Height];
+        for (int y = 0; y < m_Height; y++)
+            for (int x = 0; x < m_Width; x++)
+            {
+                Color& pixel = m_Data[y * m_Width + x];
+                pixel.r = pixels[y + dw.min.y][x + dw.min.x].r;
+                pixel.g = pixels[y + dw.min.y][x + dw.min.x].g;
+                pixel.b = pixels[y + dw.min.y][x + dw.min.x].b;
+            }
+
+        return true;
+    }
+    catch (Iex::BaseExc ex)
+    {
+        m_Width = m_Height = 0;
+        m_Data = NULL;
+        return false;
+    }
+}
+
+bool Bitmap::SaveEXR(const char* filename)
+{
+    try
+    {
+        Imf::RgbaOutputFile file(filename, m_Width, m_Height, Imf::WRITE_RGBA);
+        std::vector<Imf::Rgba> temp(m_Width * m_Height);
+        for (int i = 0; i < m_Width * m_Height; i++)
+        {
+            temp[i].r = m_Data[i].r;
+            temp[i].g = m_Data[i].g;
+            temp[i].b = m_Data[i].b;
+            temp[i].a = 1.0f;
+        }
+
+        file.setFrameBuffer(&temp[0], 1, m_Width);
+        file.writePixels(m_Height);
+    }
+    catch (Iex::BaseExc ex)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Bitmap::LoadImage(const char* filename)
+{
+    if ( ExtensionUpper(filename) == "BMP") return LoadBMP(filename);
+    if ( ExtensionUpper(filename) == "EXR") return LoadEXR(filename);
+    return false;
+}
+
+bool Bitmap::SaveImage(const char* filename)
+{
+    if ( ExtensionUpper(filename) == "BMP") return SaveBMP(filename);
+    if ( ExtensionUpper(filename) == "EXR") return SaveEXR(filename);
+    return false;
 }

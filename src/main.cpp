@@ -14,7 +14,7 @@
 
 const bool g_WantAA = true;
 const bool g_WantAdaptiveAA = true;
-const bool g_ShowAA = true;
+const bool g_ShowAA = false;
 const double g_AAThreshold = .1;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];

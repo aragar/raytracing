@@ -23,6 +23,12 @@ public:
     bool LoadBMP(const char* filename);
     bool SaveBMP(const char* filename);
 
+    bool LoadEXR(const char* filename);
+    bool SaveEXR(const char* filename);
+
+    virtual bool LoadImage(const char* filename);
+    virtual bool SaveImage(const char* filename);
+
 private:
     int m_Width;
     int m_Height;
