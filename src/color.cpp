@@ -56,5 +56,7 @@ void Color::operator*=(const float multiplier)
 
 void Color::operator/=(const float divider)
 {
-
+    r /= divider;
+    g /= divider;
+    b /= divider;
 }

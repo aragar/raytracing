@@ -12,9 +12,13 @@
 
 #define  COUNT_OF(arr) int((sizeof(arr)) / sizeof(arr[0]))
 
-bool wantAA = true;
+const bool g_WantAA = true;
+const bool g_WantAdaptiveAA = true;
+const bool g_ShowAA = true;
+const double g_AAThreshold = .1;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
+bool needChange[VFB_MAX_SIZE][VFB_MAX_SIZE] = {{false}};
 
 Camera g_Camera;
 std::vector<Node> g_Nodes;
@@ -77,7 +81,7 @@ Color Raytrace(const Ray& ray)
 {
     const Node* closestNode = nullptr;
     double closestDist = INF;
-    IntersectionInfo closestInfo;
+    IntersectionInfo closestInfo = IntersectionInfo();
     for ( const Node& node : g_Nodes )
     {
         IntersectionInfo info;
@@ -99,6 +103,33 @@ Color Raytrace(const Ray& ray)
     return result;
 }
 
+bool isTooDifferent(int x, int y)
+{
+    const int dx[] = {0,  0, -1, 1, -1, -1, 1,  1};
+    const int dy[] = {1, -1,  0, 0, -1,  1, 1, -1};
+    for (unsigned i = 0; i < COUNT_OF(dx); ++i)
+    {
+        unsigned nx = (unsigned) x + dx[i];
+        unsigned ny = (unsigned) y + dy[i];
+        if (nx < 0 || VFB_MAX_SIZE <= nx || ny < 0 || VFB_MAX_SIZE <= ny)
+            continue;
+
+        double diff = 0;
+        for ( unsigned j = 0; j < 3; ++j )
+        {
+//            if (vfb[y][x][j] >= 1 && vfb[ny][nx][j] >= 1)
+//                continue;
+
+            diff += Abs(vfb[y][x][j] - vfb[ny][nx][j]);
+        }
+
+        if (diff > g_AAThreshold)
+            return true;
+    }
+
+    return false;
+}
+
 void render()
 {
     const double kernel[5][2] = {
@@ -115,21 +146,37 @@ void render()
     for ( int y = 0; y < frameHeight; ++y )
         for ( int x = 0; x < frameWidth; ++x )
         {
-            if ( wantAA )
+            Ray ray = g_Camera.GetScreenRay(x, y);
+            vfb[y][x] = Raytrace(ray);
+        }
+
+    if (!g_WantAA)
+        return;
+
+    for (int y = 0; y < frameHeight; ++y)
+        for (int x = 0; x < frameWidth; ++x)
+            needChange[x][y] = !g_WantAdaptiveAA || isTooDifferent(x, y);
+
+    for (int y = 0; y < frameHeight; ++y)
+        for (int x = 0; x < frameWidth; ++x)
+        {
+            if (!needChange[x][y])
+                continue;
+
+            if (g_ShowAA)
             {
-                Color result(0, 0, 0);
-                for ( int i = 0; i < kernelSize; ++i )
+                vfb[y][x] = Color{0x0000FF};
+            }
+            else
+            {
+                Color result = vfb[y][x];
+                for ( int i = 1; i < kernelSize; ++i )
                 {
                     Ray ray = g_Camera.GetScreenRay(x + kernel[i][0], y + kernel[i][1]);
                     result += Raytrace(ray);
                 }
 
                 vfb[y][x] = result / double(kernelSize);
-            }
-            else
-            {
-                Ray ray = g_Camera.GetScreenRay(x, y);
-                vfb[y][x] = Raytrace(ray);
             }
         }
 }
