@@ -120,7 +120,7 @@ bool isTooDifferent(int x, int y)
 //            if (vfb[y][x][j] >= 1 && vfb[ny][nx][j] >= 1)
 //                continue;
 
-            diff += Abs(vfb[y][x][j] - vfb[ny][nx][j]);
+            diff += std::abs(vfb[y][x][j] - vfb[ny][nx][j]);
         }
 
         if (diff > g_AAThreshold)

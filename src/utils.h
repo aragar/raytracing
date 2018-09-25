@@ -7,7 +7,6 @@
 #include "constants.h"
 #include "vector.h"
 
-inline float Abs(const float x) {return x > 0 ? x : -x; }
 inline int SignOf(const double x) { return x > 1e-6 ? +1 : (x < -1e-6 ? -1 : 0); }
 inline double Sqr(const double a) { return a*a; }
 
