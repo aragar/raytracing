@@ -17,44 +17,46 @@ include_directories(${SDL_INCLUDE_DIR})
 
 # define OpenEXR
 include_directories(${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/include/OpenEXR)
+set(OPENEXR_LIBRARY
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIlmImf.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libHalf.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIex.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIexMath.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libImath.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libzlibstatic.a
+		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIlmThread.a)
 # end OpenEXR
 
 # define raytracing
 set(SOURCE_FILES 
-	src/main.cpp 
-	src/color.h 
-	src/color.cpp 
-	src/utils.h 
-	src/constants.h 
-	src/vector.cpp 
-	src/vector.h 
-	src/matrix.cpp 
-	src/matrix.h 
-	src/camera.cpp 
-	src/camera.h 
-	src/geometry.cpp 
-	src/geometry.h 
-	src/sdl.cpp 
-	src/sdl.h 
-	src/shading.cpp 
-	src/shading.h 
-	src/ray.h 
-	src/bitmap.cpp 
-	src/bitmap.h 
-	src/texture.cpp 
-	src/texture.h
-    src/shadinghelper.cpp
-	src/shadinghelper.h 
-	src/utils.cpp)
+		src/main.cpp
+		src/color.h
+		src/color.cpp
+		src/utils.h
+		src/constants.h
+		src/vector.cpp
+		src/vector.h
+		src/matrix.cpp
+		src/matrix.h
+		src/camera.cpp
+		src/camera.h
+		src/geometry.cpp
+		src/geometry.h
+		src/sdl.cpp
+		src/sdl.h
+		src/shading.cpp
+		src/shading.h
+		src/ray.h
+		src/bitmap.cpp
+		src/bitmap.h
+		src/texture.cpp
+		src/texture.h
+		src/shadinghelper.cpp
+		src/shadinghelper.h
+		src/utils.cpp)
 	
 add_executable(raytracing ${SOURCE_FILES})
 
 target_link_libraries(raytracing ${SDL_LIBRARY})
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIlmImf.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libHalf.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIex.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIexMath.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libImath.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libzlibstatic.a)
-target_link_libraries(raytracing ${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIlmThread.a)
+target_link_libraries(raytracing ${OPENEXR_LIBRARY})
 # end raytracing
