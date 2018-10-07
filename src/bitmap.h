@@ -7,18 +7,18 @@ class Bitmap
 {
 public:
     Bitmap();
-    ~Bitmap();
+    virtual ~Bitmap();
 
     void freeMem();
 
-    int GetWidth() const { return m_Width; }
-    int GetHeight() const { return m_Height; }
+    unsigned GetWidth() const { return m_Width; }
+    unsigned GetHeight() const { return m_Height; }
     bool IsOK() const { return (m_Data != nullptr); }
 
-    void GenerateEmptyImage(int width, int height);
+    void GenerateEmptyImage(unsigned width, unsigned height);
 
-    Color GetPixel(int x, int y) const;
-    void SetPixel(int x, int y, const Color& color);
+    Color GetPixel(unsigned int x, unsigned int y) const;
+    void SetPixel(unsigned x, unsigned y, const Color& color);
 
     bool LoadBMP(const char* filename);
     bool SaveBMP(const char* filename);
@@ -30,8 +30,8 @@ public:
     virtual bool SaveImage(const char* filename);
 
 private:
-    int m_Width;
-    int m_Height;
+    unsigned m_Width;
+    unsigned m_Height;
 
     Color* m_Data;
 };

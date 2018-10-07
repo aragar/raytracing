@@ -12,6 +12,9 @@ bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 
     double scaleFactor = (m_Height - ray.start.y) / ray.dir.y;
     outInfo.ip = ray.start + ray.dir*scaleFactor;
+    if (std::abs(outInfo.ip.x) > m_Limit || std::abs(outInfo.ip.z) > m_Limit)
+        return false;
+
     outInfo.distance = scaleFactor;
     outInfo.normal = {0., ray.start.y > m_Height ? 1. : -1., 0.};
     outInfo.u = outInfo.ip.x;
@@ -26,6 +29,12 @@ bool Plane::IsInside(const Vector& point) const
     // parallel to the XZ plane
     bool result = (point.y == m_Height);
     return result;
+}
+
+Plane::Plane(double height, double limit)
+: m_Height(height),
+  m_Limit(limit)
+{
 }
 
 bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -44,14 +53,10 @@ bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     p2 = (-B + sqrt(discr)) / (2*A);
 
     double p;
-    bool backNormal = false;
     if ( p1 > 0 )
         p = p1;
     else if ( p2 > 0 )
-    {
         p = p2;
-        backNormal = true;
-    }
     else
         return false;
 
@@ -60,15 +65,12 @@ bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 
     Vector posRelative = outInfo.ip - m_Center;
     outInfo.normal = Normalize(posRelative);
-    if ( backNormal )
-        outInfo.normal = -outInfo.normal;
 
     outInfo.u = atan2(posRelative.z, posRelative.x);
     outInfo.u = (outInfo.u + PI) / (2*PI);
 
     outInfo.v = asin(posRelative.y / m_Radius);
-    outInfo.v = (outInfo.v + PI/2) / PI;
-    outInfo.u = outInfo.v = 0;
+    outInfo.v = -(outInfo.v + PI/2) / PI;
 
     outInfo.geometry = this;
 
@@ -79,6 +81,12 @@ bool Sphere::IsInside(const Vector& point) const
 {
     bool result = ((point - m_Center).LengthSqr() <= Sqr(m_Radius));
     return result;
+}
+
+Sphere::Sphere(const Vector& center, double radius)
+: m_Center(center),
+  m_Radius(radius)
+{
 }
 
 bool Cube::IntersectSide(double level, double start, double dir, const Ray& ray, const Vector& normal, IntersectionInfo& outInfo) const
@@ -134,6 +142,12 @@ bool Cube::IsInside(const Vector& point) const
     result &= AreEqual(point.y, m_Center.y, m_HalfSide);
     result &= AreEqual(point.z, m_Center.z, m_HalfSide);
     return result;
+}
+
+Cube::Cube(const Vector& center, double halfSide)
+: m_Center(center),
+  m_HalfSide(halfSide)
+{
 }
 
 bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -196,6 +210,12 @@ bool CsgOp::IsInside(const Vector& point) const
     return result;
 }
 
+CsgOp::CsgOp(Geometry* left, Geometry* right)
+: m_Left(left),
+  m_Right(right)
+{
+}
+
 bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
     if ( ray.start.y > m_Center.y && ray.dir.y >= 0. )
@@ -240,4 +260,11 @@ bool RegularPolygon::IsInside(const Vector& point) const
     // parallel to the XZ plane
     bool result = (point.y == m_Center.y);
     return result;
+}
+
+RegularPolygon::RegularPolygon(const Vector& center, double radius, unsigned int sides)
+: m_Center(center),
+  m_Radius(radius),
+  m_Sides(Max(sides, 3))
+{
 }

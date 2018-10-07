@@ -24,8 +24,7 @@ public:
 class Lambert : public Shader
 {
 public:
-    void SetColor(const Color& color) { m_Color = color; }
-    void SetTexture(Texture* texture) { m_Texture = texture; }
+    Lambert(const Color& color, Texture* texture = nullptr);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
@@ -37,10 +36,8 @@ private:
 class Phong : public Shader
 {
 public:
-    void SetColor(const Color& color) { m_Color = color; }
-    void SetTexture(Texture* texture) { m_Texture = texture; }
-    void SetSpecularMultiplier(double multiplier) { m_SpecularMultiplier = multiplier; }
-    void SetSpecularExponent(double exponent) { m_SpecularExponent = exponent; }
+    Phong(const Color& color, double specularMultiplier = 1., double specularExponent = 1.);
+    Phong(Texture* texture, double specularMultiplier = 1., double specularExponent = 1.);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
@@ -49,12 +46,15 @@ protected:
 
     Color m_Color;
     Texture* m_Texture = nullptr;
-    double m_SpecularMultiplier = 0.;
-    double m_SpecularExponent = 0.;
+    double m_SpecularMultiplier = 1.;
+    double m_SpecularExponent = 1.;
 };
 
 class BlinnPhong : public Phong
 {
+public:
+    using Phong::Phong;
+
 protected:
     virtual double GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const override;
 };
@@ -62,9 +62,8 @@ protected:
 class OrenNayar : public Shader
 {
 public:
-    void SetSigma(double sigma)       { m_Sigma = sigma; }
-    void SetColor(const Color& color) { m_Color = color; }
-    void SetTexture(Texture* texture) { m_Texture = texture; }
+    OrenNayar(const Color& color, double sigma = 0.);
+    OrenNayar(Texture* texture, double sigma = 0.);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
@@ -72,6 +71,27 @@ private:
     Color m_Color;
     Texture* m_Texture = nullptr;
     double m_Sigma = 0;
+};
+
+class Reflection : public Shader
+{
+public:
+    Reflection(double multiplier = 0.99);
+    virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+
+private:
+    double m_Multiplier = 0.99;
+};
+
+class Refraction : public Shader
+{
+public:
+    Refraction(double inOutRatio, double multiplier = 0.99);
+    virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+
+private:
+    double m_InOutRatio = 1.;
+    double m_Multiplier = 0.99;
 };
 
 #endif //RAYTRACING_SHADING_H

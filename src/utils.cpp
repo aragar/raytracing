@@ -2,6 +2,10 @@
 #include <cstring>
 #include <cctype>
 #include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include "utils.h"
 
 std::string UpCaseString(std::string s)
 {
@@ -28,4 +32,16 @@ std::string ExtensionUpper(const char* filename)
     }
 
     return "";
+}
+
+bool FileExists(const char* filename)
+{
+    char temp[512];
+    strcpy(temp, filename);
+    int filenameLength = (int) strlen(temp);
+    if (filenameLength && temp[filenameLength - 1] == '/')
+        temp[--filenameLength] = 0;
+
+    struct stat st;
+    return (0 == stat(temp, &st));
 }

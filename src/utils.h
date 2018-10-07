@@ -4,8 +4,11 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+
 #include "constants.h"
 #include "vector.h"
+
+#define  COUNT_OF(arr) int((sizeof(arr)) / sizeof(arr[0]))
 
 inline int SignOf(const double x) { return x > 1e-6 ? +1 : (x < -1e-6 ? -1 : 0); }
 inline double Sqr(const double a) { return a*a; }
@@ -34,6 +37,7 @@ inline bool AreEqual(const Vector& lhs, const Vector& rhs, double eps = 1e-6) { 
 
 std::string UpCaseString(std::string s);
 std::string ExtensionUpper(const char* filename);
+bool FileExists(const char* filename);
 
 class FileRAII {
     FILE* held;

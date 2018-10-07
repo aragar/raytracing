@@ -27,56 +27,53 @@ public:
 class Plane : public Geometry
 {
 public:
-    void SetHeight(double height) { m_Height = height; }
+    Plane(double height = 0., double limit = 1e99);
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
 
 private:
-    double m_Height;
+    double m_Height = 0.;
+    double m_Limit = 1e99;
 };
 
 class RegularPolygon : public Geometry
 {
 public:
-    void SetCenter(const Vector& center) { m_Center = center; }
-    void SetRadius(double radius) { m_Radius = radius; }
-    void SetSides(unsigned sides) { m_Sides = Max(3, sides); }
+    RegularPolygon(const Vector& center, double radius = 1., unsigned sides = 3);
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
-    double m_Radius;
-    unsigned m_Sides;
+    double m_Radius = 1.;
+    unsigned m_Sides = 3;
 };
 
 class Sphere : public Geometry
 {
 public:
-    void SetCenter(const Vector& center) { m_Center = center; }
-    void SetRadius(double radius) { m_Radius = radius; }
+    Sphere(const Vector& center, double radius = 1.);
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
-    double m_Radius;
+    double m_Radius = 1.;
 };
 
 class Cube : public Geometry
 {
 public:
-    void SetCenter(const Vector& center) { m_Center = center; }
-    void SetHalfSide(double halfSide) { m_HalfSide = halfSide; }
+    Cube(const Vector& center, double halfSide = .5);
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
 
 private:
     Vector m_Center;
-    double m_HalfSide;
+    double m_HalfSide = .5;
 
     bool IntersectSide(double level, double start, double dir, const Ray& ray, const Vector& normal, IntersectionInfo& info) const;
 };
@@ -84,15 +81,14 @@ private:
 class CsgOp : public Geometry
 {
 public:
-    void SetLeft(Geometry* left) { m_Left = left; }
-    void SetRight(Geometry* right) {  m_Right = right; }
+    CsgOp(Geometry* left, Geometry* right);
 
     virtual bool Operator(bool inA, bool inB) const =0;
     virtual bool IsInside(const Vector& point) const override;
 
 private:
-    Geometry* m_Left;
-    Geometry* m_Right;
+    Geometry* m_Left = nullptr;
+    Geometry* m_Right = nullptr;
 
     bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 };
@@ -118,8 +114,8 @@ public:
 struct Shader;
 struct Node
 {
-    Geometry* geometry;
-    Shader* shader;
+    Geometry* geometry = nullptr;
+    Shader* shader = nullptr;
 };
 
 #endif //RAYTRACING_GEOMETRY_H

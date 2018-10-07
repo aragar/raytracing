@@ -3,8 +3,8 @@ project(raytracing)
 
 # define C++
 set(CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wl,--enable-stdcall-fixup")
+set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}   -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
 # end C++
 
@@ -27,8 +27,14 @@ set(OPENEXR_LIBRARY
 		${PROJECT_SOURCE_DIR}/tools/OpenEXR-mingw/lib/libIlmThread.a)
 # end OpenEXR
 
+#define bitmap_image
+set(BITMAP_IMAGE_DIRECTORY ${PROJECT_SOURCE_DIR}/tools/bitmap)
+include_directories(${BITMAP_IMAGE_DIRECTORY})
+#end bitmap_image
+
 # define raytracing
-set(SOURCE_FILES 
+set(SOURCE_FILES
+        tools/bitmap/bitmap_image.hpp
 		src/main.cpp
 		src/color.h
 		src/color.cpp
@@ -53,7 +59,9 @@ set(SOURCE_FILES
 		src/texture.h
 		src/shadinghelper.cpp
 		src/shadinghelper.h
-		src/utils.cpp)
+		src/utils.cpp
+        src/environment.h
+        src/environment.cpp)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

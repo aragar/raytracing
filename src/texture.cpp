@@ -1,11 +1,5 @@
+#include "bitmap.h"
 #include "texture.h"
-
-CheckerTexture::CheckerTexture()
-: m_Scaling(1.)
-{
-    m_Color1.MakeZero();
-    m_Color2.MakeZero();
-}
 
 Color CheckerTexture::Sample(const IntersectionInfo& info) const
 {
@@ -14,6 +8,13 @@ Color CheckerTexture::Sample(const IntersectionInfo& info) const
 
     Color checkerColor = ( (x + y) % 2 == 0 ) ? m_Color1 : m_Color2;
     return checkerColor;
+}
+
+CheckerTexture::CheckerTexture(const Color& color1, const Color& color2, double scaling)
+: m_Scaling(scaling),
+  m_Color1(color1),
+  m_Color2(color2)
+{
 }
 
 Color MandelbrotTexture::Sample(const IntersectionInfo& info) const
@@ -47,6 +48,13 @@ Color MandelbrotTexture::Sample(const IntersectionInfo& info) const
     return result;
 }
 
+MandelbrotTexture::MandelbrotTexture(double scaling, const Color& color1, const Color& color2)
+: m_Scaling(scaling),
+  m_Color1(color1),
+  m_Color2(color2)
+{
+}
+
 ProceduralTexture::ProceduralTexture()
 {
     for ( unsigned i = 0; i < NUM; ++i )
@@ -66,4 +74,40 @@ Color ProceduralTexture::Sample(const IntersectionInfo& info) const
         result += (m_ColorU[i]*sin(info.u*m_FreqU[i]) + m_ColorV[i]*sin(info.v*m_FreqV[i]));
 
     return result;
+}
+
+ConstantColorTexture::ConstantColorTexture(const Color& color)
+: m_Color(color)
+{
+}
+
+BitmapTexture::BitmapTexture(const char* filename, double scaling)
+: m_Scaling(1./scaling)
+{
+    m_Bitmap = new Bitmap;
+    m_Bitmap->LoadImage(filename);
+}
+
+BitmapTexture::~BitmapTexture()
+{
+    delete m_Bitmap;
+}
+
+Color BitmapTexture::Sample(const IntersectionInfo& info) const
+{
+    int x = (int) floor(info.u * m_Scaling * m_Bitmap->GetWidth());
+    int y = (int) floor(info.v * m_Scaling * m_Bitmap->GetHeight());
+
+    // 0 <= x < bitmap.width
+    // 0 <= y < bitmap.height
+    x %= m_Bitmap->GetWidth();
+    if (x < 0)
+        x += m_Bitmap->GetWidth();
+
+    y %= m_Bitmap->GetHeight();
+    if (y < 0)
+        y += m_Bitmap->GetHeight();
+
+    const Color& color = m_Bitmap->GetPixel(x, y);
+    return color;
 }

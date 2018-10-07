@@ -4,6 +4,7 @@
 #include "color.h"
 #include "geometry.h"
 
+struct IntersectionInfo;
 class Texture
 {
 public:
@@ -14,9 +15,9 @@ public:
 class ConstantColorTexture : public Texture
 {
 public:
-    void SetColor(const Color& color) { m_Color = color; }
+    ConstantColorTexture(const Color& color);
 
-    virtual Color Sample(const IntersectionInfo& info) const override { return m_Color; }
+    virtual Color Sample(const IntersectionInfo&) const override { return m_Color; }
 
 private:
     Color m_Color;
@@ -25,16 +26,12 @@ private:
 class CheckerTexture : public Texture
 {
 public:
-    CheckerTexture();
-
-    void SetScaling(double Scaling) { m_Scaling = Scaling; }
-    void SetColor1(const Color& color) { m_Color1 = color; }
-    void SetColor2(const Color& color) { m_Color2 = color; }
+    CheckerTexture(const Color& color1, const Color& color2, double scaling);
 
     virtual Color Sample(const IntersectionInfo& info) const override;
 
 private:
-    double m_Scaling;
+    double m_Scaling = 1.;
     Color m_Color1;
     Color m_Color2;
 };
@@ -42,14 +39,12 @@ private:
 class MandelbrotTexture : public Texture
 {
 public:
-    void SetScaling(double Scaling) { m_Scaling = Scaling; }
-    void SetColor1(const Color& Color1) { m_Color1 = Color1; }
-    void SetColor2(const Color& Color2) { m_Color2 = Color2; }
+    MandelbrotTexture(double scaling, const Color& color1, const Color& color2);
 
     virtual Color Sample(const IntersectionInfo& info) const override;
 
 private:
-    double m_Scaling;
+    double m_Scaling = 1.;
     Color m_Color1;
     Color m_Color2;
 };
@@ -69,6 +64,20 @@ private:
 
     Color m_ColorV[NUM];
     double m_FreqV[NUM];
+};
+
+class Bitmap;
+class BitmapTexture : public Texture
+{
+public:
+    BitmapTexture(const char* filename, double scaling = 1.0);
+    virtual ~BitmapTexture() override;
+
+    virtual Color Sample(const IntersectionInfo& info) const override;
+
+private:
+    Bitmap* m_Bitmap = nullptr;
+    double m_Scaling = 1.;
 };
 
 #endif //RAYTRACING_TEXTURE_H

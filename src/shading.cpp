@@ -7,7 +7,7 @@ extern Vector g_LightPos;
 extern Color g_AmbientLight;
 extern std::vector<Light> g_Lights;
 
-Color Lambert::Shade(const Ray& ray, const IntersectionInfo& info) const
+Color Lambert::Shade(const Ray&, const IntersectionInfo& info) const
 {
     const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
     Color result = diffuse*g_AmbientLight;
@@ -22,6 +22,12 @@ Color Lambert::Shade(const Ray& ray, const IntersectionInfo& info) const
     }
 
     return result;
+}
+
+Lambert::Lambert(const Color& color, Texture* texture)
+: m_Color(color),
+  m_Texture(texture)
+{
 }
 
 double Phong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
@@ -50,6 +56,20 @@ Color Phong::Shade(const Ray& ray, const IntersectionInfo& info) const
     }
 
     return result;
+}
+
+Phong::Phong(const Color& color, double specularMultiplier, double specularExponent)
+: m_Color(color),
+  m_SpecularMultiplier(specularMultiplier),
+  m_SpecularExponent(specularExponent)
+{
+}
+
+Phong::Phong(Texture* texture, double specularMultiplier, double specularExponent)
+: m_Texture(texture),
+  m_SpecularMultiplier(specularMultiplier),
+  m_SpecularExponent(specularExponent)
+{
 }
 
 double BlinnPhong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
@@ -85,4 +105,68 @@ Color OrenNayar::Shade(const Ray& ray, const IntersectionInfo& info) const
     }
 
     return result;
+}
+
+OrenNayar::OrenNayar(const Color& color, double sigma)
+: m_Color(color),
+  m_Sigma(sigma)
+{
+}
+
+OrenNayar::OrenNayar(Texture* texture, double sigma)
+: m_Texture(texture),
+  m_Sigma(sigma)
+{
+}
+
+Reflection::Reflection(double multiplier)
+: m_Multiplier(multiplier)
+{
+}
+
+extern Color Raytrace(const Ray& ray);
+Color Reflection::Shade(const Ray& ray, const IntersectionInfo& info) const
+{
+    Vector n = Faceforward(ray.dir, info.normal);
+
+    Ray newRay = ray;
+    newRay.start = info.ip + n * 0.000001;
+    newRay.dir = Reflect(ray.dir, n);
+    newRay.depth++;
+
+    const Color& color = Raytrace(newRay) * m_Multiplier;
+    return color;
+}
+
+Refraction::Refraction(double inOutRatio, double multiplier)
+: m_InOutRatio(inOutRatio),
+  m_Multiplier(multiplier)
+{
+}
+
+Color Refraction::Shade(const Ray& ray, const IntersectionInfo& info) const
+{
+    // ior = eta2 / eta1
+    Vector refraction;
+    if (Dot(ray.dir, info.normal) < 0)
+    {
+        // entering the geometry
+        refraction = Refract(ray.dir, info.normal, 1 / m_InOutRatio);
+    }
+    else
+    {
+        // leaving the geometry
+        refraction = Refract(ray.dir, -info.normal, m_InOutRatio);
+    }
+
+    if (refraction.LengthSqr() == 0)
+        return Color(1, 0, 0); // to debug easy
+
+    Ray newRay = ray;
+    newRay.start = info.ip - Faceforward(ray.dir, info.normal) * 0.000001;
+    newRay.dir = refraction;
+    newRay.depth++;
+
+    const Color& color = Raytrace(newRay) * m_Multiplier;
+    return color;
 }
