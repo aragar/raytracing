@@ -1,9 +1,9 @@
 #include "shading.h"
 
-#include "texture.h"
+#include "colors.h"
 #include "shadinghelper.h"
+#include "texture.h"
 
-extern Vector g_LightPos;
 extern Color g_AmbientLight;
 extern std::vector<Light> g_Lights;
 
@@ -160,7 +160,7 @@ Color Refraction::Shade(const Ray& ray, const IntersectionInfo& info) const
     }
 
     if (refraction.LengthSqr() == 0)
-        return Color(1, 0, 0); // to debug easy
+        return Colors::RED; // to debug easy
 
     Ray newRay = ray;
     newRay.start = info.ip - Faceforward(ray.dir, info.normal) * 0.000001;

@@ -34,7 +34,7 @@ include_directories(${BITMAP_IMAGE_DIRECTORY})
 
 # define raytracing
 set(SOURCE_FILES
-        tools/bitmap/bitmap_image.hpp
+        ${BITMAP_IMAGE_DIRECTORY}/bitmap_image.hpp
 		src/main.cpp
 		src/color.h
 		src/color.cpp
@@ -61,7 +61,8 @@ set(SOURCE_FILES
 		src/shadinghelper.h
 		src/utils.cpp
         src/environment.h
-        src/environment.cpp)
+        src/environment.cpp
+        src/colors.h)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

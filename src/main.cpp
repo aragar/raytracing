@@ -35,11 +35,11 @@ void SetupScene()
     g_Camera.SetYaw(0);
     g_Camera.SetPitch(-30);
     g_Camera.SetRoll(0);
-    g_Camera.SetFOV(90);
+    g_Camera.SetFOV(60);
     g_Camera.SetAspectRatio((double)GetFrameWidth() / GetFrameHeight());
 
     // light
-    g_Lights.push_back(Light{ {120, 180, 0}, 1000 });
+    g_Lights.push_back(Light{ {120, 180, 0}, 10000 });
     // g_Lights.push_back(Light{{-600, 700, -350}, 800000});
     g_AmbientLight = Color{1, 1, 1}*0.1;
 
@@ -49,10 +49,12 @@ void SetupScene()
     Phong* floor = new Phong(tiles, 5.3, 20.);
     g_Nodes.push_back({ plane, floor });
 
-    Sphere* sphere = new Sphere( {0, 30, -30}, 27 );
+    Sphere* sphere = new Sphere( {-30, 30, -30}, 27 );
+    Cube* cube = new Cube({30, 30, -50}, 15);
     Refraction* refraction = new Refraction(1.1, 0.9);
     Reflection* reflection = new Reflection(0.9);
     g_Nodes.push_back({ sphere, reflection });
+    g_Nodes.push_back({ cube, refraction });
 
     g_Environment = new CubemapEnvironment("../data/env/forest");
 
