@@ -31,3 +31,5 @@
 # Cmake generated
 cmake-build-debug/*
 cmake-build-release/*
+
+!tools/**
