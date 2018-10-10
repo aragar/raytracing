@@ -32,4 +32,5 @@
 cmake-build-debug/*
 cmake-build-release/*
 
+# Ignore exception for external libraries
 !tools/**
