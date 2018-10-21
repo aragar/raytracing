@@ -10,5 +10,6 @@ void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE]);
 void WaitForUserExit();
 int GetFrameWidth();
 int GetFrameHeight();
+void SetWindowCaption(const char* msg, float renderTime = -1.f);
 
 #endif //RAYTRACING_SDL_H

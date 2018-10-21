@@ -12,7 +12,7 @@
 #include "utils.h"
 #include "colors.h"
 
-const bool g_WantAA = false;
+const bool g_WantAA = true;
 const bool g_WantAdaptiveAA = true;
 const bool g_ShowAA = false;
 const double g_AAThreshold = .1;
@@ -211,6 +211,7 @@ int main (int argc, char* argv[])
         render();
         Uint32 elapsedMs = SDL_GetTicks() - startTicks;
         printf("Render took %.2lfs\n", elapsedMs / 1000.);
+        SetWindowCaption("Quad Damage: rendered in %.2fs\n", elapsedMs / 1000.f);
 
 //        DisplayVFB(vfb);
 //    }

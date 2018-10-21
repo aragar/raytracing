@@ -89,3 +89,17 @@ int GetFrameHeight()
 
     return 0;
 }
+
+void SetWindowCaption(const char* msg, float renderTime)
+{
+    if (renderTime >= 0.f)
+    {
+        char message[128];
+        sprintf(message, msg, renderTime);
+        SDL_WM_SetCaption(message, nullptr);
+    }
+    else
+    {
+        SDL_WM_SetCaption(msg, nullptr);
+    }
+}
