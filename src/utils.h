@@ -53,6 +53,8 @@ public:
 /// in must be an unit vector. Returns vectors ray1 and ray2 such that
 /// in, ray1 and ray2 form an orthonormal system in 3D (all vectors are
 /// unit, and are mutually orthogonal)
-void OrthonormalSystem(const Vector& in, Vector& ray1, Vector& ray2);
+void OrthonormalSystem(const Vector& in, Vector& outRay1, Vector& outRay2);
+
+void GenerateDiscPoint(double& outX, double& outY);
 
 #endif //RAYTRACING_UTILS_H

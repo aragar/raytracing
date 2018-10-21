@@ -149,10 +149,8 @@ Color Reflection::Shade(const Ray& ray, const IntersectionInfo& info) const
             Vector a, b;
             OrthonormalSystem(n, a, b);
 
-            double angle = Random() * 2 * PI;
-            double radius = Random();
-            double x = cos(angle) * radius;
-            double y = sin(angle) * radius;
+            double x, y;
+            GenerateDiscPoint(x, y);
 
             const double k = tan((1 - m_Glossiness) * PI / 2);
             x *= k;
