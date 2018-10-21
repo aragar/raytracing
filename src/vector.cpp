@@ -46,10 +46,17 @@ int Vector::MaxDimension() const
     return maxDim;
 }
 
+void Vector::operator-=(const Vector& other)
+{
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+}
+
 Vector Reflect(Vector in, const Vector& norm)
 {
     in.Normalize();
-    in += 2 * norm * Dot(norm, -in);
+    in -= 2 * norm * Dot(norm, in);
     in.Normalize();
     return in;
 }
@@ -68,7 +75,7 @@ Vector Refract(const Vector& in, const Vector& norm, double inOutRatio)
     double k = 1. - Sqr(inOutRatio) * (1. - Sqr(NdotI));
 
     Vector result = Vector(0, 0, 0);
-    if (k >= 0.)
+    if (k >= 0.) // otherwise we have total internal reflection
         result = inOutRatio*in - (inOutRatio*NdotI + sqrt(k))*norm;
 
     return result;

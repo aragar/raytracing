@@ -28,6 +28,7 @@ struct Vector
     void Normalize() { Scale(1.f / Length()); }
 
     void operator+=(const Vector& other);
+    void operator-=(const Vector& other);
     void operator*=(double multiplier) { Scale(multiplier); }
     void operator/=(double divider) { Scale(1.f/divider); }
 
