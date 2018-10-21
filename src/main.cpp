@@ -16,6 +16,8 @@ const bool g_WantAA = true;
 const bool g_WantAdaptiveAA = true;
 const bool g_ShowAA = false;
 const double g_AAThreshold = .1;
+const bool g_WantProgressiveDisplay = true;
+const int m_ProgressiveDisplayDelay = 500;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
 bool needChange[VFB_MAX_SIZE][VFB_MAX_SIZE] = {{false}};
@@ -131,8 +133,42 @@ bool isTooDifferent(int x, int y)
     return false;
 }
 
-void render()
+void simpleRender()
 {
+    SetWindowCaption("Quad Damage: Simple Pass");
+
+    Uint32 lastTicks = SDL_GetTicks();
+    int frameWidth = GetFrameWidth();
+    int frameHeight = GetFrameHeight();
+    for ( int y = 0; y < frameHeight; ++y )
+    {
+        for ( int x = 0; x < frameWidth; ++x )
+        {
+            Ray ray = g_Camera.GetScreenRay(x, y);
+            vfb[y][x] = Raytrace(ray);
+        }
+
+        if (g_WantProgressiveDisplay)
+        {
+            Uint32 ticks = SDL_GetTicks();
+            if ( ticks - lastTicks > m_ProgressiveDisplayDelay )
+            {
+                DisplayVFB(vfb);
+                lastTicks = ticks;
+            }
+        }
+    }
+
+    DisplayVFB(vfb);
+}
+
+void aaRender()
+{
+    SetWindowCaption("Quad Damage: AA Pass");
+
+    if (!g_WantAA)
+        return;
+
     const double kernel[5][2] = {
             {0.0, 0.0},
             {0.6, 0.0},
@@ -144,26 +180,11 @@ void render()
 
     int frameWidth = GetFrameWidth();
     int frameHeight = GetFrameHeight();
-    for ( int y = 0; y < frameHeight; ++y )
-    {
-        for ( int x = 0; x < frameWidth; ++x )
-        {
-            Ray ray = g_Camera.GetScreenRay(x, y);
-            vfb[y][x] = Raytrace(ray);
-        }
-
-//        if (y % 10 == 0)
-//            DisplayVFB(vfb);
-    }
-
-    DisplayVFB(vfb);
-    if (!g_WantAA)
-        return;
-
     for (int y = 0; y < frameHeight; ++y)
         for (int x = 0; x < frameWidth; ++x)
             needChange[x][y] = !g_WantAdaptiveAA || isTooDifferent(x, y);
 
+    Uint32 lastTicks = SDL_GetTicks();
     for (int y = 0; y < frameHeight; ++y)
     {
         for ( int x = 0; x < frameWidth; ++x )
@@ -187,11 +208,24 @@ void render()
             }
         }
 
-        if (y % 10 == 0)
-            DisplayVFB(vfb);
+        if (g_WantProgressiveDisplay)
+        {
+            Uint32 ticks = SDL_GetTicks();
+            if ( ticks - lastTicks > m_ProgressiveDisplayDelay )
+            {
+                DisplayVFB(vfb);
+                lastTicks = ticks;
+            }
+        }
     }
 
     DisplayVFB(vfb);
+}
+
+void render()
+{
+    simpleRender();
+    aaRender();
 }
 
 // don't remove main arguments, it's required by SDL
@@ -213,7 +247,6 @@ int main (int argc, char* argv[])
         printf("Render took %.2lfs\n", elapsedMs / 1000.);
         SetWindowCaption("Quad Damage: rendered in %.2fs\n", elapsedMs / 1000.f);
 
-//        DisplayVFB(vfb);
 //    }
 
     WaitForUserExit();
