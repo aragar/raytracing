@@ -6,9 +6,9 @@
 class Colors
 {
 public:
-    static const Color RED; // = Color{1, 0, 0};
+    static const Color RED;
 };
 
-const Color RED = Color{1, 0, 0};
+const Color Colors::RED = Color{1, 0, 0};
 
 #endif //RAYTRACING_COLORS_H
