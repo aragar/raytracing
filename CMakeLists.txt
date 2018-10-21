@@ -62,7 +62,8 @@ set(SOURCE_FILES
 		src/utils.cpp
         src/environment.h
         src/environment.cpp
-        src/colors.h)
+        src/colors.h
+		src/colors.cpp)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

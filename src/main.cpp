@@ -10,6 +10,7 @@
 #include "shading.h"
 #include "texture.h"
 #include "utils.h"
+#include "colors.h"
 
 const bool g_WantAA = false;
 const bool g_WantAdaptiveAA = true;
@@ -35,7 +36,7 @@ void SetupScene()
     g_Camera.SetYaw(0);
     g_Camera.SetPitch(-30);
     g_Camera.SetRoll(0);
-    g_Camera.SetFOV(60);
+    g_Camera.SetFOV(90);
     g_Camera.SetAspectRatio((double)GetFrameWidth() / GetFrameHeight());
 
     // light
@@ -45,16 +46,26 @@ void SetupScene()
 
     // ground
     Plane* plane = new Plane(1., 100.);
-    Texture* tiles = new BitmapTexture("../data/floor.bmp", 100);
+    Texture* tiles = new BitmapTexture("../data/texture/wood.bmp", 100);
     Phong* floor = new Phong(tiles, 5.3, 20.);
-    g_Nodes.push_back({ plane, floor });
+
+    Layered* layeredFloor = new Layered;
+    layeredFloor->AddLayer(floor, Colors::WHITE);
+    layeredFloor->AddLayer(new Reflection(0.9), Colors::WHITE * 0.02);
+
+    g_Nodes.push_back({ plane, layeredFloor });
 
     Sphere* sphere = new Sphere( {-30, 30, -30}, 27 );
-    Cube* cube = new Cube({30, 30, -50}, 15);
-    Refraction* refraction = new Refraction(1.1, 0.9);
     Reflection* reflection = new Reflection(0.9);
+
+    Cube* cube = new Cube({30, 30, -50}, 15);
+    Layered* glass = new Layered;
+    const double inOutRatioGlass = 1.3;
+    glass->AddLayer(new Refraction(inOutRatioGlass, 0.9), Colors::WHITE);
+    glass->AddLayer(new Reflection(0.2), Colors::WHITE, new Fresnel(inOutRatioGlass));
+
     g_Nodes.push_back({ sphere, reflection });
-    g_Nodes.push_back({ cube, refraction });
+    g_Nodes.push_back({ cube, glass });
 
     g_Environment = new CubemapEnvironment("../data/env/forest");
 
@@ -141,9 +152,11 @@ void render()
             vfb[y][x] = Raytrace(ray);
         }
 
-        // DisplayVFB(vfb);
+//        if (y % 10 == 0)
+//            DisplayVFB(vfb);
     }
 
+    DisplayVFB(vfb);
     if (!g_WantAA)
         return;
 
@@ -173,7 +186,12 @@ void render()
                 vfb[y][x] = result / double(kernelSize);
             }
         }
+
+        if (y % 10 == 0)
+            DisplayVFB(vfb);
     }
+
+    DisplayVFB(vfb);
 }
 
 // don't remove main arguments, it's required by SDL
@@ -183,17 +201,18 @@ int main (int argc, char* argv[])
 
     SetupScene();
 
-//    for (int i = 0; i < 36; ++i)
+//    const int rotations = 10;
+//    for (int i = 0; i < rotations; ++i)
 //    {
-//        g_Camera.SetYaw(1. * i * 2*M_PI/36);
-//        SDL_Delay(500);
+//        g_Camera.SetYaw(1. * i * 2*PI/rotations);
+//        g_Camera.FrameBegin();
 
         Uint32 startTicks = SDL_GetTicks();
         render();
         Uint32 elapsedMs = SDL_GetTicks() - startTicks;
         printf("Render took %.2lfs\n", elapsedMs / 1000.);
 
-        DisplayVFB(vfb);
+//        DisplayVFB(vfb);
 //    }
 
     WaitForUserExit();

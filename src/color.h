@@ -19,6 +19,7 @@ public:
 
     void operator+=(const Color& rhs);
     void operator*=(float multiplier);
+    void operator*=(const Color& rhs);
     void operator/=(float divider);
 
     const float& operator[](int index) const { return components[index]; }

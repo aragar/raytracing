@@ -111,3 +111,21 @@ Color BitmapTexture::Sample(const IntersectionInfo& info) const
     const Color& color = m_Bitmap->GetPixel(x, y);
     return color;
 }
+
+Fresnel::Fresnel(double inOutRatio)
+: m_InOutRatio(inOutRatio)
+{
+}
+
+Color Fresnel::Sample(const IntersectionInfo& info) const
+{
+    double fresnel = 0.;
+    if (info.normal * info.rayDir > 0)
+        fresnel = FresnelRatio(info.rayDir, -info.normal, 1. / m_InOutRatio);
+    else
+        fresnel = FresnelRatio(info.rayDir, info.normal, m_InOutRatio);
+
+    float fresnelFloat = static_cast<float>(fresnel);
+    Color result{fresnelFloat, fresnelFloat, fresnelFloat};
+    return result;
+}

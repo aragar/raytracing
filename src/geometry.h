@@ -14,6 +14,7 @@ struct IntersectionInfo
     double distance;
     double u, v;
     const Geometry* geometry;
+    Vector rayDir;
 };
 
 class Geometry

@@ -60,3 +60,10 @@ void Color::operator/=(const float divider)
     g /= divider;
     b /= divider;
 }
+
+void Color::operator*=(const Color& rhs)
+{
+    r *= rhs.r;
+    g *= rhs.g;
+    b *= rhs.b;
+}

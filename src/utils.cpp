@@ -45,3 +45,17 @@ bool FileExists(const char* filename)
     struct stat st;
     return (0 == stat(temp, &st));
 }
+
+void OrthonormalSystem(const Vector& in, Vector& ray1, Vector& ray2)
+{
+    // is there a reason for these vectors or they are purely random
+    const Vector FIXED_SAMPLES[2] = {
+            {-0.267261242, 0.534522484, -0.801783726},
+            {+0.483368245, 0.096673649, +0.870062840}
+    };
+
+    ray1 = fabs(Dot(in, FIXED_SAMPLES[0])) > 0.99 ? in ^ FIXED_SAMPLES[1] : in ^ FIXED_SAMPLES[0];
+    ray1.Normalize();
+    ray2 = in ^ ray1;
+    ray2.Normalize();
+}

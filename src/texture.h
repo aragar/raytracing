@@ -80,4 +80,14 @@ private:
     double m_Scaling = 1.;
 };
 
+class Fresnel : public Texture
+{
+public:
+    Fresnel(double inOutRatio);
+    virtual Color Sample(const IntersectionInfo& info) const override;
+
+private:
+    double m_InOutRatio = 1.;
+};
+
 #endif //RAYTRACING_TEXTURE_H

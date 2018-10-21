@@ -1,6 +1,8 @@
 #ifndef RAYTRACING_SHADING_H
 #define RAYTRACING_SHADING_H
 
+#include <array>
+
 #include "color.h"
 #include "vector.h"
 
@@ -76,11 +78,13 @@ private:
 class Reflection : public Shader
 {
 public:
-    Reflection(double multiplier = 0.99);
+    Reflection(double multiplier = 0.99, double glossiness = 1., int samples = 32);
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
 private:
     double m_Multiplier = 0.99;
+    double m_Glossiness = 1.;
+    int m_Samples = 32;
 };
 
 class Refraction : public Shader
@@ -92,6 +96,26 @@ public:
 private:
     double m_InOutRatio = 1.;
     double m_Multiplier = 0.99;
+};
+
+class Layered : public Shader
+{
+public:
+    Layered();
+    void AddLayer(Shader* shader, Color blend, Texture* texture = nullptr);
+
+    virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+
+private:
+    struct Layer
+    {
+        Shader* m_Shader;
+        Color m_Blend;
+        Texture* m_Texture;
+    };
+
+    std::array<Layer, 32> m_Layers;
+    unsigned m_NumLayers = 0;
 };
 
 #endif //RAYTRACING_SHADING_H

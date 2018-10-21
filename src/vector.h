@@ -2,6 +2,7 @@
 #define RAYTRACING_VECTOR_H
 
 #include <cmath>
+#include <cstdio>
 
 struct Vector
 {
@@ -37,6 +38,8 @@ struct Vector
     inline double& operator[](int index) { return v[index]; }
     inline const double& operator[](int index) const { return v[index]; }
 
+    void print() const { printf("(%.9lf, %.9lf, %.9lf)", x, y, z); }
+
     static Vector GetZero() { return {0, 0, 0}; }
 };
 
@@ -56,5 +59,6 @@ inline Vector operator^(const Vector& lhs, const Vector& rhs)       { return { l
 Vector Reflect(Vector in, const Vector& norm);
 Vector Refract(const Vector& in, const Vector& norm, double inOutRatio);
 Vector Faceforward(const Vector& ray, const Vector& norm);
+double FresnelRatio(const Vector& in, const Vector& norm, double inOutRatio);
 
 #endif //RAYTRACING_VECTOR_H

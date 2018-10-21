@@ -80,3 +80,11 @@ Vector Refract(const Vector& in, const Vector& norm, double inOutRatio)
 
     return result;
 }
+
+double FresnelRatio(const Vector& in, const Vector& norm, double inOutRatio)
+{
+    // Schlich's approximation
+    double f = Sqr((1. - inOutRatio) / (1 + inOutRatio));
+    double result = f + (1. - f)*pow(1. + in*norm, 5.);
+    return result;
+}
