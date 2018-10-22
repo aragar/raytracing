@@ -7,16 +7,16 @@
 extern Color g_AmbientLight;
 extern std::vector<Light> g_Lights;
 
-Color Lambert::Shade(const Ray&, const IntersectionInfo& info) const
+Color Lambert::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
     const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
     Color result = diffuse*g_AmbientLight;
 
-    const Vector& normalDir = info.normal;
     for (const Light& light : g_Lights)
     {
-        const Vector lightDir = Normalize(light.pos - info.ip);
-        const double lambertCoeff = Dot(normalDir, lightDir);
+        const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
+        const Vector normal = Faceforward(lightDir, info.normal); // orient so that surface points to the light
+        const double lambertCoeff = Dot(normal, -lightDir);
         const double lightContribution = ShadingHelper::GetLightContribution(info, light);
         result += diffuse*lambertCoeff*lightContribution;
     }
@@ -35,26 +35,26 @@ Lambert::Lambert(Texture* texture)
 
 double Phong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
 {
-    const Vector lightDir = Normalize(info.ip - light.pos);
-    const Vector normalDir = Faceforward(ray.dir, info.normal);
-    Vector reflection = Reflect(lightDir, normalDir);
-    double cosGamma = Dot(-ray.dir, reflection);
-    double result = cosGamma > 0. ? pow(cosGamma, m_SpecularExponent) : 0.;
+    const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
+    const Vector normal = Faceforward(lightDir, info.normal); // orient so that the surface points to the light
+    const Vector reflection = Reflect(lightDir, normal);
+    const double cosGamma = Dot(-ray.dir, reflection);
+    const double result = cosGamma > 0. ? pow(cosGamma, m_SpecularExponent) : 0.;
     return result;
 }
 
 Color Phong::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
-    Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
+    const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
     Color result = diffuse*g_AmbientLight;
 
-    const Vector normalDir = Faceforward(ray.dir, info.normal);
     for (const Light& light : g_Lights)
     {
-        Vector lightDir = Normalize(light.pos - info.ip);
-        double lambertCoeff = Dot(normalDir, lightDir);
-        double lightContribution = ShadingHelper::GetLightContribution(info, light);
-        double specularCoeff = GetSpecularCoeff(ray, info, light);
+        const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
+        const Vector normal = Faceforward(lightDir, info.normal); // orient so that the surface points to the light
+        const double lambertCoeff = Dot(normal, -lightDir);
+        const double lightContribution = ShadingHelper::GetLightContribution(info, light);
+        const double specularCoeff = GetSpecularCoeff(ray, info, light);
         result += diffuse*lambertCoeff*lightContribution
                   + Color{1.f, 1.f, 1.f}*specularCoeff*m_SpecularMultiplier*lightContribution;
     }
