@@ -8,6 +8,8 @@ class Colors
 public:
     static const Color RED;
     static const Color WHITE;
+    static const Color YELLOW;
+    static const Color GREEN;
 };
 
 #endif //RAYTRACING_COLORS_H

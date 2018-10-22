@@ -4,20 +4,23 @@
 
 #include "camera.h"
 #include "color.h"
+#include "colors.h"
 #include "environment.h"
 #include "geometry.h"
+#include "mesh.h"
+#include "meshdata.h"
 #include "sdl.h"
 #include "shading.h"
 #include "texture.h"
 #include "utils.h"
-#include "colors.h"
 
 const bool g_WantAA = true;
 const bool g_WantAdaptiveAA = true;
 const bool g_ShowAA = false;
 const double g_AAThreshold = .1;
-const bool g_WantProgressiveDisplay = false;
-const int m_ProgressiveDisplayDelay = 500;
+
+const bool g_WantProgressiveDisplay = true;
+const int g_ProgressiveDisplayDelay = 100;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
 bool needChange[VFB_MAX_SIZE][VFB_MAX_SIZE] = {{false}};
@@ -34,45 +37,56 @@ const int maxRaytraceDepth = 10;
 void SetupScene()
 {
     // camera
-    g_Camera.SetPosition({0, 60, -120});
-    g_Camera.SetYaw(0);
-    g_Camera.SetPitch(-30);
+    g_Camera.SetPosition({45, 120, -300});
+    g_Camera.SetYaw(5);
+    g_Camera.SetPitch(-5);
     g_Camera.SetRoll(0);
-    g_Camera.SetFOV(90);
+    g_Camera.SetFOV(60);
     g_Camera.SetAspectRatio((double)GetFrameWidth() / GetFrameHeight());
-
-    // light
-    g_Lights.push_back(Light{ {120, 180, 0}, 10000 });
-    // g_Lights.push_back(Light{{-600, 700, -350}, 800000});
-    g_AmbientLight = Color{1, 1, 1}*0.1;
-
-    // ground
-    Plane* plane = new Plane(1., 100.);
-    Texture* tiles = new BitmapTexture("../data/floor.bmp", 1000);
-    Phong* floor = new Phong(tiles, 5.3, 20.);
-
-    Layered* layeredFloor = new Layered;
-    layeredFloor->AddLayer(floor, Colors::WHITE);
-    //layeredFloor->AddLayer(new Reflection(0.9), Colors::WHITE * 0.02);
-
-    g_Nodes.push_back({ plane, layeredFloor });
-
-    Sphere* sphere = new Sphere( {-30, 30, -30}, 27 );
-    Reflection* reflection = new Reflection(0.9);
-
-    Cube* cube = new Cube({30, 30, -50}, 15);
-    Layered* glass = new Layered;
-    const double inOutRatioGlass = 1.3;
-    glass->AddLayer(new Refraction(inOutRatioGlass, 0.9), Colors::WHITE);
-    glass->AddLayer(new Reflection(0.2), Colors::WHITE, new Fresnel(inOutRatioGlass));
-
-    g_Nodes.push_back({ sphere, reflection });
-    // g_Nodes.push_back({ cube, glass });
-
-    g_Environment = new CubemapEnvironment("../data/env/forest");
 
     // start
     g_Camera.FrameBegin();
+
+    // light
+    g_Lights.push_back(Light{ {-90, 1200, -750}, 1200000 });
+    g_AmbientLight = Color{1, 1, 1}*0.5;
+
+    // plane
+    Plane* plane = new Plane(1., 200.);
+    Texture* texture = new BitmapTexture("../data/texture/wood.bmp", 100);
+    Layered* planeShader = new Layered;
+    planeShader->AddLayer(new Lambert(texture), Colors::WHITE);
+    planeShader->AddLayer(new Reflection, Colors::WHITE * 0.05, new Fresnel(1.33));
+    g_Nodes.push_back({ plane, planeShader });
+
+    // football
+    Mesh* mesh = GenerateTruncatedIcosahedron();
+    mesh->SetBackCulling(true);
+    mesh->SetFaceted(false);
+    mesh->Translate({-100, 50, 0});
+    mesh->ComputeBoundingGeometry();
+
+    CheckerTexture* checker = new CheckerTexture(Colors::WHITE * 0.7, Colors::WHITE * 0.15, 1);
+    Lambert* meshShader = new Lambert(checker);
+    g_Nodes.push_back({ mesh, meshShader });
+
+    // sphere
+    Sphere* sphere = new Sphere({100, 50, 50}, 50);
+    Shader* glossy = new Reflection(0.9, 0.95, 25);
+    g_Nodes.push_back({ sphere, glossy });
+
+    Color colors[3] = { Colors::RED, Colors::YELLOW, Colors::GREEN};
+    for (int i = 0; i < COUNT_OF(colors); ++i)
+    {
+        Color& color = colors[i];
+        color.AdjustSaturation(0.9f);
+        Sphere* ball = new Sphere({10. + 32*i, 15, 0}, 15.);
+        Shader* ballShader = new Phong(color*.75, 0.35);
+        g_Nodes.push_back({ ball, ballShader });
+    }
+
+    // environment
+    g_Environment = new CubemapEnvironment("../data/env/forest");
 }
 
 Color Raytrace(const Ray& ray)
@@ -151,7 +165,7 @@ void simpleRender()
         if (g_WantProgressiveDisplay)
         {
             Uint32 ticks = SDL_GetTicks();
-            if ( ticks - lastTicks > m_ProgressiveDisplayDelay )
+            if ( ticks - lastTicks > g_ProgressiveDisplayDelay )
             {
                 DisplayVFB(vfb);
                 lastTicks = ticks;
@@ -211,7 +225,7 @@ void aaRender()
         if (g_WantProgressiveDisplay)
         {
             Uint32 ticks = SDL_GetTicks();
-            if ( ticks - lastTicks > m_ProgressiveDisplayDelay )
+            if ( ticks - lastTicks > g_ProgressiveDisplayDelay )
             {
                 DisplayVFB(vfb);
                 lastTicks = ticks;

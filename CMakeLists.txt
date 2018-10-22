@@ -5,7 +5,7 @@ project(raytracing)
 set(CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wl,--enable-stdcall-fixup")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}   -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O0")
 # end C++
 
 # define SDL
@@ -63,7 +63,11 @@ set(SOURCE_FILES
         src/environment.h
         src/environment.cpp
         src/colors.h
-		src/colors.cpp)
+        src/colors.cpp
+        src/meshdata.cpp
+        src/meshdata.h
+        src/mesh.cpp
+        src/mesh.h)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

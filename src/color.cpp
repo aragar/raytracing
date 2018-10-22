@@ -67,3 +67,11 @@ void Color::operator*=(const Color& rhs)
     g *= rhs.g;
     b *= rhs.b;
 }
+
+void Color::AdjustSaturation(float amount)
+{
+    const float mid = Intensity();
+    r = mid + (r - mid) * amount;
+    g = mid + (g - mid) * amount;
+    b = mid + (b - mid) * amount;
+}

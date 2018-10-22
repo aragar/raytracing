@@ -13,6 +13,7 @@ public:
 
     void SetColor(float r, float g, float b);
     void MakeZero() { SetColor(0.f, 0.f, 0.f); }
+    void AdjustSaturation(float amount);
 
     float Intensity() const { return (r + g + b) / 3; }
     float IntensityPerceptual() const { return (r*0.299f + g*0.587f + b*0.114f); }
