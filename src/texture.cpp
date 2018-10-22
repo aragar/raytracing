@@ -95,21 +95,10 @@ BitmapTexture::~BitmapTexture()
 
 Color BitmapTexture::Sample(const IntersectionInfo& info) const
 {
-    int x = (int) floor(info.u * m_Scaling * m_Bitmap->GetWidth());
-    int y = (int) floor(info.v * m_Scaling * m_Bitmap->GetHeight());
-
-    // 0 <= x < bitmap.width
-    // 0 <= y < bitmap.height
-    x %= m_Bitmap->GetWidth();
-    if (x < 0)
-        x += m_Bitmap->GetWidth();
-
-    y %= m_Bitmap->GetHeight();
-    if (y < 0)
-        y += m_Bitmap->GetHeight();
-
-    const Color& color = m_Bitmap->GetPixel(x, y);
-    return color;
+    const double x = info.u * m_Scaling * m_Bitmap->GetWidth();
+    const double y = info.v * m_Scaling * m_Bitmap->GetHeight();
+    const Color result = m_Bitmap->GetBilinearFilteredPixel(x, y);
+    return result;
 }
 
 Fresnel::Fresnel(double inOutRatio)

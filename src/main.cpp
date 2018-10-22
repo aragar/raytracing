@@ -16,7 +16,7 @@ const bool g_WantAA = true;
 const bool g_WantAdaptiveAA = true;
 const bool g_ShowAA = false;
 const double g_AAThreshold = .1;
-const bool g_WantProgressiveDisplay = true;
+const bool g_WantProgressiveDisplay = false;
 const int m_ProgressiveDisplayDelay = 500;
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
@@ -48,12 +48,12 @@ void SetupScene()
 
     // ground
     Plane* plane = new Plane(1., 100.);
-    Texture* tiles = new BitmapTexture("../data/texture/wood.bmp", 100);
+    Texture* tiles = new BitmapTexture("../data/floor.bmp", 1000);
     Phong* floor = new Phong(tiles, 5.3, 20.);
 
     Layered* layeredFloor = new Layered;
     layeredFloor->AddLayer(floor, Colors::WHITE);
-    layeredFloor->AddLayer(new Reflection(0.9), Colors::WHITE * 0.02);
+    //layeredFloor->AddLayer(new Reflection(0.9), Colors::WHITE * 0.02);
 
     g_Nodes.push_back({ plane, layeredFloor });
 
@@ -67,7 +67,7 @@ void SetupScene()
     glass->AddLayer(new Reflection(0.2), Colors::WHITE, new Fresnel(inOutRatioGlass));
 
     g_Nodes.push_back({ sphere, reflection });
-    g_Nodes.push_back({ cube, glass });
+    // g_Nodes.push_back({ cube, glass });
 
     g_Environment = new CubemapEnvironment("../data/env/forest");
 

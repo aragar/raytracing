@@ -199,3 +199,29 @@ bool Bitmap::SaveImage(const char* filename)
     if ( ExtensionUpper(filename) == "EXR") return SaveEXR(filename);
     return false;
 }
+
+Color Bitmap::GetBilinearFilteredPixel(double x, double y) const
+{
+    int xx = floor(x);
+    int yy = floor(y);
+    const double p = x - xx;
+    const double q = y - yy;
+
+    const unsigned width = GetWidth();
+    xx %= width;
+    if (xx < 0)
+        xx += width;
+
+    const unsigned height = GetHeight();
+    yy %= height;
+    if (yy < 0)
+        yy += height;
+
+    const Color center    = GetPixel(xx, yy);
+    const Color right     = GetPixel((xx + 1) % width, yy);
+    const Color down      = GetPixel(xx, (yy + 1) % height);
+    const Color downRight = GetPixel((xx + 1) % width, (yy + 1) % height);
+
+    const Color result = center*(1 - p)*(1 - q) + right*p*(1 - q) + down*(1 - p)*q + downRight*p*q;
+    return result;
+}

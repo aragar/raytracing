@@ -20,6 +20,8 @@ public:
     Color GetPixel(unsigned int x, unsigned int y) const;
     void SetPixel(unsigned x, unsigned y, const Color& color);
 
+    Color GetBilinearFilteredPixel(double x, double y) const;
+
     bool LoadBMP(const char* filename);
     bool SaveBMP(const char* filename);
 

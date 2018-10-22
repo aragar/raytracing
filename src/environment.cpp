@@ -62,13 +62,13 @@ void CubemapEnvironment::UnloadMaps()
 // (-1, -1) .. (+1, +1), and transforms them to (0, 0)..(W, H) where W, H are the bitmap width and height.
 Color CubemapEnvironment::GetSide(const Bitmap& bmp, double x, double y) const
 {
-    const int width = bmp.GetWidth();
-    const int nx = int((x + 1) * 0.5 * (width - 1));
+    const unsigned width = bmp.GetWidth();
+    const double nx = (x + 1) * 0.5 * (width - 1);
 
-    const int height = bmp.GetHeight();
-    const int ny = int((y + 1) * 0.5 * (height - 1));
+    const unsigned height = bmp.GetHeight();
+    const double ny = (y + 1) * 0.5 * (height - 1);
 
-    const Color& color = bmp.GetPixel(nx, ny);
+    const Color color = bmp.GetBilinearFilteredPixel(nx, ny);
     return color;
 }
 Color CubemapEnvironment::GetEnvironment(const Vector& indir) const
