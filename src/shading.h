@@ -26,7 +26,8 @@ public:
 class Lambert : public Shader
 {
 public:
-    Lambert(const Color& color, Texture* texture = nullptr);
+    Lambert(const Color& color);
+    Lambert(Texture* texture);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
 
@@ -48,8 +49,8 @@ protected:
 
     Color m_Color;
     Texture* m_Texture = nullptr;
-    double m_SpecularMultiplier = 1.;
-    double m_SpecularExponent = 1.;
+    double m_SpecularMultiplier = 10.;
+    double m_SpecularExponent = 0.4;
 };
 
 class BlinnPhong : public Phong

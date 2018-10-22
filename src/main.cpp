@@ -22,6 +22,8 @@ const double g_AAThreshold = .1;
 const bool g_WantProgressiveDisplay = true;
 const int g_ProgressiveDisplayDelay = 100;
 
+const bool g_UseStandartRGB = false;
+
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
 bool needChange[VFB_MAX_SIZE][VFB_MAX_SIZE] = {{false}};
 
@@ -167,13 +169,13 @@ void simpleRender()
             Uint32 ticks = SDL_GetTicks();
             if ( ticks - lastTicks > g_ProgressiveDisplayDelay )
             {
-                DisplayVFB(vfb);
+                DisplayVFB(vfb, g_UseStandartRGB);
                 lastTicks = ticks;
             }
         }
     }
 
-    DisplayVFB(vfb);
+    DisplayVFB(vfb, g_UseStandartRGB);
 }
 
 void aaRender()
@@ -227,13 +229,13 @@ void aaRender()
             Uint32 ticks = SDL_GetTicks();
             if ( ticks - lastTicks > g_ProgressiveDisplayDelay )
             {
-                DisplayVFB(vfb);
+                DisplayVFB(vfb, g_UseStandartRGB);
                 lastTicks = ticks;
             }
         }
     }
 
-    DisplayVFB(vfb);
+    DisplayVFB(vfb, g_UseStandartRGB);
 }
 
 void render()

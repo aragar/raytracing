@@ -24,18 +24,22 @@ Color Lambert::Shade(const Ray&, const IntersectionInfo& info) const
     return result;
 }
 
-Lambert::Lambert(const Color& color, Texture* texture)
-: m_Color(color),
-  m_Texture(texture)
+Lambert::Lambert(const Color& color)
+: m_Color(color)
 {
 }
 
+Lambert::Lambert(Texture* texture)
+: m_Texture(texture)
+{}
+
 double Phong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
 {
-    Vector lightDir = Normalize(info.ip - light.pos);
-    Vector reflection = Reflect(lightDir, info.normal);
-    double dot = Dot(-ray.dir, reflection);
-    double result = pow(Max(dot, 0.), m_SpecularExponent);
+    const Vector lightDir = Normalize(info.ip - light.pos);
+    const Vector normalDir = Faceforward(ray.dir, info.normal);
+    Vector reflection = Reflect(lightDir, normalDir);
+    double cosGamma = Dot(-ray.dir, reflection);
+    double result = cosGamma > 0. ? pow(cosGamma, m_SpecularExponent) : 0.;
     return result;
 }
 
@@ -44,7 +48,7 @@ Color Phong::Shade(const Ray& ray, const IntersectionInfo& info) const
     Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
     Color result = diffuse*g_AmbientLight;
 
-    const Vector& normalDir = info.normal;
+    const Vector normalDir = Faceforward(ray.dir, info.normal);
     for (const Light& light : g_Lights)
     {
         Vector lightDir = Normalize(light.pos - info.ip);
@@ -143,7 +147,7 @@ Color Reflection::Shade(const Ray& ray, const IntersectionInfo& info) const
     }
     else
     {
-        int count = ray.depth > 2 ? 2 : m_Samples;
+        int count = ray.depth > 0 ? 2 : m_Samples;
         for (int i = 0; i < count; ++i)
         {
             Vector a, b;

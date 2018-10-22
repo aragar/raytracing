@@ -31,7 +31,7 @@ void CloseGraphics()
     SDL_Quit();
 }
 
-void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE])
+void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE], bool useSRGB)
 {
     int redShift = screen->format->Rshift;
     int greenShift = screen->format->Gshift;
@@ -40,7 +40,8 @@ void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE])
     {
         Uint32* row = (Uint32*)((Uint8*) screen->pixels + y*screen->pitch);
         for ( int x = 0; x < screen->w; ++x )
-            row[x] = vfb[y][x].toSRGB32(redShift, greenShift, blueShift);
+            row[x] = useSRGB ? vfb[y][x].toSRGB32(redShift, greenShift, blueShift)
+                             : vfb[y][x].toRGB32(redShift, greenShift, blueShift);
     }
 
     SDL_Flip(screen);
