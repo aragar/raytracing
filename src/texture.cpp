@@ -81,8 +81,9 @@ ConstantColorTexture::ConstantColorTexture(const Color& color)
 {
 }
 
-BitmapTexture::BitmapTexture(const char* filename, double scaling)
+BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilinearFiltering)
 : m_Scaling(1./scaling)
+, m_UseBilinearFiltering(useBilinearFiltering)
 {
     m_Bitmap = new Bitmap;
     m_Bitmap->LoadImage(filename);
@@ -95,9 +96,31 @@ BitmapTexture::~BitmapTexture()
 
 Color BitmapTexture::Sample(const IntersectionInfo& info) const
 {
-    const double x = info.u * m_Scaling * m_Bitmap->GetWidth();
-    const double y = info.v * m_Scaling * m_Bitmap->GetHeight();
-    const Color result = m_Bitmap->GetBilinearFilteredPixel(x, y);
+    Color result;
+    if (!m_UseBilinearFiltering)
+    {
+        int x = (int) floor(info.u * m_Scaling * m_Bitmap->GetWidth());
+        int y = (int) floor(info.v * m_Scaling * m_Bitmap->GetHeight());
+
+        // 0 <= x < bitmap.width
+        // 0 <= y < bitmap.height
+        x %= m_Bitmap->GetWidth();
+        if ( x < 0 )
+            x += m_Bitmap->GetWidth();
+
+        y %= m_Bitmap->GetHeight();
+        if ( y < 0 )
+            y += m_Bitmap->GetHeight();
+
+        result = m_Bitmap->GetPixel(x, y);
+    }
+    else
+    {
+        const double x = info.u * m_Scaling * m_Bitmap->GetWidth();
+        const double y = info.v * m_Scaling * m_Bitmap->GetHeight();
+        result = m_Bitmap->GetBilinearFilteredPixel(x, y);
+    }
+
     return result;
 }
 

@@ -32,13 +32,14 @@ public:
     /// (or they may be .exr images, not .bmp).
     /// The folder specification shouldn't include a trailing slash;
     /// e.g. "/images/cubemaps/cathedral" is OK.
-    CubemapEnvironment(const char* folder);
+    CubemapEnvironment(const char* folder, bool useBilinearFiltering = false);
 
     virtual ~CubemapEnvironment() override;
     virtual Color GetEnvironment(const Vector& dir) const override;
 
 private:
     Bitmap* m_Maps[6];
+    bool m_UseBilinearFiltering = false;
 
     Color GetSide(const Bitmap& bmp, double x, double y) const;
     bool LoadMaps(const char* folder);

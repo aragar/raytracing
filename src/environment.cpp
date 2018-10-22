@@ -36,7 +36,8 @@ bool CubemapEnvironment::LoadMaps(const char* folder)
     return true;
 }
 
-CubemapEnvironment::CubemapEnvironment(const char* folder)
+CubemapEnvironment::CubemapEnvironment(const char* folder, bool useBilinearFiltering)
+: m_UseBilinearFiltering(useBilinearFiltering)
 {
     memset(m_Maps, 0, sizeof(m_Maps));
     LoadMaps(folder);
@@ -68,7 +69,8 @@ Color CubemapEnvironment::GetSide(const Bitmap& bmp, double x, double y) const
     const unsigned height = bmp.GetHeight();
     const double ny = (y + 1) * 0.5 * (height - 1);
 
-    const Color color = bmp.GetBilinearFilteredPixel(nx, ny);
+    const Color color = m_UseBilinearFiltering ? bmp.GetBilinearFilteredPixel(nx, ny)
+                                               : bmp.GetPixel(static_cast<unsigned>(nx), static_cast<unsigned>(ny));
     return color;
 }
 Color CubemapEnvironment::GetEnvironment(const Vector& indir) const

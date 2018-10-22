@@ -70,7 +70,7 @@ class Bitmap;
 class BitmapTexture : public Texture
 {
 public:
-    BitmapTexture(const char* filename, double scaling = 1.0);
+    BitmapTexture(const char* filename, double scaling = 1.0, bool useBilinearFiltering = false);
     virtual ~BitmapTexture() override;
 
     virtual Color Sample(const IntersectionInfo& info) const override;
@@ -78,6 +78,7 @@ public:
 private:
     Bitmap* m_Bitmap = nullptr;
     double m_Scaling = 1.;
+    bool m_UseBilinearFiltering = false;
 };
 
 class Fresnel : public Texture

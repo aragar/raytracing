@@ -55,7 +55,7 @@ void SetupScene()
 
     // plane
     Plane* plane = new Plane(1., 200.);
-    Texture* texture = new BitmapTexture("../data/texture/wood.bmp", 100);
+    Texture* texture = new BitmapTexture("../data/texture/wood.bmp", 100, true /*use bilinear filtering*/);
     Layered* planeShader = new Layered;
     planeShader->AddLayer(new Lambert(texture), Colors::WHITE);
     planeShader->AddLayer(new Reflection, Colors::WHITE * 0.05, new Fresnel(1.33));
@@ -88,7 +88,7 @@ void SetupScene()
     }
 
     // environment
-    g_Environment = new CubemapEnvironment("../data/env/forest");
+    g_Environment = new CubemapEnvironment("../data/env/forest", true /*use bilinear filtering*/);
 }
 
 Color Raytrace(const Ray& ray)
