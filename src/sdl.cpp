@@ -68,6 +68,12 @@ void WaitForUserExit()
                             break;
                     }
                 }
+                case SDL_MOUSEBUTTONDOWN:
+                {
+                    extern void DebugRaytrace(int x, int y);
+                    DebugRaytrace(event.button.x, event.button.y);
+                    break;
+                }
                 default:
                     break;
             }

@@ -83,7 +83,7 @@ void SetupScene()
         Color& color = colors[i];
         color.AdjustSaturation(0.9f);
         Sphere* ball = new Sphere({10. + 32*i, 15, 0}, 15.);
-        Shader* ballShader = new Phong(color*.75, 0.35);
+        Shader* ballShader = new Phong(color*.75, 30, 100);
         g_Nodes.push_back({ ball, ballShader });
     }
 
@@ -242,6 +242,13 @@ void render()
 {
     simpleRender();
     aaRender();
+}
+
+void DebugRaytrace(int x, int y)
+{
+    Ray ray = g_Camera.GetScreenRay(x, y);
+    ray.debug = true;
+    Raytrace(ray);
 }
 
 // don't remove main arguments, it's required by SDL

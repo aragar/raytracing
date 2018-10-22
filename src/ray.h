@@ -6,8 +6,9 @@
 struct Ray
 {
     Vector start;
-    Vector dir; // normed
+    Vector dir; // normalized
     int depth = 0;
+    bool debug = false;
 };
 
 #endif //RAYTRACING_RAY_H_H
