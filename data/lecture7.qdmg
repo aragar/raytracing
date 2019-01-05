@@ -14,7 +14,7 @@ GlobalSettings {
 	frameWidth              640
 	frameHeight             480
 	ambientLight            (0.5, 0.5, 0.5)
-	wantAA                  false
+	wantAA                  true
 	wantAdaptiveAA          true
 	aaThreshold             0.1
 	wantProgressiveDisplay  true
@@ -25,7 +25,7 @@ GlobalSettings {
 }
 
 Light {
-	pos                (-90, -1200, -750)
+	pos                (-90, 1200, -750)
 	intensity          1200000
 }
 

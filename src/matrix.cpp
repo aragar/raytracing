@@ -58,7 +58,7 @@ double cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
             a.m[rows[0]][cols[0]]*a.m[rows[1]][cols[1]] -
             a.m[rows[1]][cols[0]]*a.m[rows[0]][cols[1]]
     );
-    if ( (ii + jj) & 2 )
+    if ( (ii + jj) % 2 )
         t = -t;
 
     return t;
@@ -66,11 +66,11 @@ double cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
 
 Matrix Inverse(const Matrix &a)
 {
-    double d = Determinant(a);
+    const double d = Determinant(a);
     if ( fabs(d) < 1e-12 )
         return a;
 
-    double rD = 1. / d;
+    const double rD = 1. / d;
 
     Matrix result;
     for ( unsigned i = 0; i < Matrix::SIZE; ++i )
@@ -125,8 +125,8 @@ Matrix RotationAroundZ(double angle)
 Matrix Transpose(const Matrix& a)
 {
     Matrix res;
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
+    for (unsigned i = 0; i < Matrix::SIZE; i++)
+        for (unsigned j = 0; j < Matrix::SIZE; j++)
             res.m[i][j] = a.m[j][i];
 
     return res;
