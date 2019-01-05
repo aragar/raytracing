@@ -2,6 +2,7 @@
 *.slo
 *.lo
 *.o
+*.obj
 
 # Precompiled Headers
 *.gch
@@ -32,3 +33,4 @@ cmake-build-debug/*
 cmake-build-release/*
 
 !tools/**
+!data/**
