@@ -884,6 +884,8 @@ void GlobalSettings::FillProperties(ParsedBlock& pb)
 
     pb.GetBoolProp("wantProgressiveDisplay", &wantProgressiveDisplay);
     pb.GetUnsignedProp("progressiveDisplayDelay", &progressiveDisplayDelay);
+
+    pb.GetBoolProp("useSRGB", &useSRGB);
 }
 
 SceneElement* DefaultSceneParser::NewSceneElement(const char* className)

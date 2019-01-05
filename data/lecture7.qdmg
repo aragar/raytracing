@@ -19,7 +19,7 @@ GlobalSettings {
 	aaThreshold             0.1
 	wantProgressiveDisplay  true
     progressiveDisplayDelay 100
-    useSRGM                 false
+    useSRGB                 false
     showAA                  false
     aaDebugColor            (1, 0, 0)
 }
@@ -41,7 +41,7 @@ Camera camera {
 
 // 3. The floor node:
 Plane floor {
-	y      -0.01
+	height   -0.01
 	limit    200
 }
 
