@@ -1,5 +1,8 @@
-#include "bitmap.h"
 #include "texture.h"
+
+#include "bitmap.h"
+
+#include <cstring>
 
 Color CheckerTexture::Sample(const IntersectionInfo& info) const
 {
@@ -8,6 +11,13 @@ Color CheckerTexture::Sample(const IntersectionInfo& info) const
 
     Color checkerColor = ( (x + y) % 2 == 0 ) ? m_Color1 : m_Color2;
     return checkerColor;
+}
+
+void CheckerTexture::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color1", &m_Color1);
+    pb.GetColorProp("color2", &m_Color2);
+    pb.GetDoubleProp("scaling", &m_Scaling);
 }
 
 CheckerTexture::CheckerTexture(const Color& color1, const Color& color2, double scaling)
@@ -48,6 +58,13 @@ Color MandelbrotTexture::Sample(const IntersectionInfo& info) const
     return result;
 }
 
+void MandelbrotTexture::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color1", &m_Color1);
+    pb.GetColorProp("color2", &m_Color2);
+    pb.GetDoubleProp("scaling", &m_Scaling);
+}
+
 MandelbrotTexture::MandelbrotTexture(double scaling, const Color& color1, const Color& color2)
 : m_Scaling(scaling),
   m_Color1(color1),
@@ -55,25 +72,44 @@ MandelbrotTexture::MandelbrotTexture(double scaling, const Color& color1, const 
 {
 }
 
-ProceduralTexture::ProceduralTexture()
-{
-    for ( unsigned i = 0; i < NUM; ++i )
-    {
-        m_ColorU[i] = {(float)Random(), (float)Random(), (float)Random()};
-        m_FreqU[i] = Random(0.01, 0.25);
-
-        m_ColorV[i] = {(float)Random(), (float)Random(), (float)Random()};
-        m_FreqV[i] = Random(0.01, 0.25);
-    }
-}
-
 Color ProceduralTexture::Sample(const IntersectionInfo& info) const
 {
     Color result = {0, 0, 0};
-    for ( unsigned i = 0; i < NUM; ++i )
-        result += (m_ColorU[i]*sin(info.u*m_FreqU[i]) + m_ColorV[i]*sin(info.v*m_FreqV[i]));
+    for (const ProceduralLine& line : m_Lines)
+        result += (line.colorU*sin(info.u*line.freqU) + line.colorV*sin(info.v*line.freqV));
 
     return result;
+}
+
+void ProceduralTexture::FillProperties(ParsedBlock& pb)
+{
+    char name[128];
+    char value[256];
+    int srcLine;
+    for (int i = 0; i < pb.GetBlockLines(); i++)
+    {
+        // fetch and parse all lines like "element <colorU> <freqU> <colorV> <freqV>"
+        pb.GetBlockLine(i, srcLine, name, value);
+        if (!strcmp(name, "element"))
+        {
+            StripBracesAndCommas(value);
+            float colorU1, colorU2, colorU3;
+            double freqU;
+            float colorV1, colorV2, colorV3;
+            double freqV;
+            if (8 != sscanf(value, "%f%f%f %lf %f%f%f %lf"
+                    , &colorU1, &colorU2, &colorU3
+                    , &freqU
+                    , &colorV1, &colorV2, &colorV3
+                    , &freqV))
+            {
+                throw SyntaxError(srcLine, "Expected a procedural in the format <colorU> <freqU> <colorV> <freqV>");
+            }
+
+            ProceduralLine line{Color(colorU1, colorU2, colorU3), freqU, Color(colorV1, colorV2, colorV3), freqV};
+            m_Lines.push_back(line);
+        }
+    }
 }
 
 ConstantColorTexture::ConstantColorTexture(const Color& color)
@@ -81,12 +117,18 @@ ConstantColorTexture::ConstantColorTexture(const Color& color)
 {
 }
 
+void ConstantColorTexture::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color", &m_Color);
+}
+
 BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilinearFiltering)
 : m_Scaling(1./scaling)
 , m_UseBilinearFiltering(useBilinearFiltering)
 {
     m_Bitmap = new Bitmap;
-    m_Bitmap->LoadImage(filename);
+    if (filename)
+        m_Bitmap->LoadImage(filename);
 }
 
 BitmapTexture::~BitmapTexture()
@@ -124,6 +166,17 @@ Color BitmapTexture::Sample(const IntersectionInfo& info) const
     return result;
 }
 
+void BitmapTexture::FillProperties(ParsedBlock& pb)
+{
+    pb.GetDoubleProp("scaling", &m_Scaling);
+    m_Scaling = 1./m_Scaling;
+
+    pb.GetBoolProp("useBilinearFiltering", &m_UseBilinearFiltering);
+
+    if (!pb.GetBitmapFileProp("file", *m_Bitmap));
+        pb.RequiredProp("file");
+}
+
 Fresnel::Fresnel(double inOutRatio)
 : m_InOutRatio(inOutRatio)
 {
@@ -140,4 +193,9 @@ Color Fresnel::Sample(const IntersectionInfo& info) const
     float fresnelFloat = static_cast<float>(fresnel);
     Color result{fresnelFloat, fresnelFloat, fresnelFloat};
     return result;
+}
+
+void Fresnel::FillProperties(ParsedBlock& pb)
+{
+    pb.GetDoubleProp("ior", &m_InOutRatio, 1e-6, 10.);
 }

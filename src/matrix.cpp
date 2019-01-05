@@ -50,7 +50,7 @@ double cofactor(const Matrix& a, const unsigned ii, const unsigned jj)
         if ( i != ii )
             rows[rc++] = i;
 
-    for ( unsigned j = 0; j < jj; ++j )
+    for ( unsigned j = 0; j < Matrix::SIZE; ++j )
         if ( j != jj )
             cols[cc++] = j;
 
@@ -120,4 +120,14 @@ Matrix RotationAroundZ(double angle)
     result.m[1][1] = C;
 
     return result;
+}
+
+Matrix Transpose(const Matrix& a)
+{
+    Matrix res;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            res.m[i][j] = a.m[j][i];
+
+    return res;
 }

@@ -36,12 +36,6 @@ bool CubemapEnvironment::LoadMaps(const char* folder)
     return true;
 }
 
-CubemapEnvironment::CubemapEnvironment(const char* folder, bool useBilinearFiltering)
-: m_UseBilinearFiltering(useBilinearFiltering)
-{
-    memset(m_Maps, 0, sizeof(m_Maps));
-    LoadMaps(folder);
-}
 CubemapEnvironment::~CubemapEnvironment()
 {
     UnloadMaps();
@@ -111,4 +105,17 @@ Color CubemapEnvironment::GetEnvironment(const Vector& indir) const
         case 5: return GetSide(*m_Maps[static_cast<int>(CubeOrder::POSZ)],  t.x, -t.y);
         default: return Color(0.0f, 0.0f, 0.0f);
     }
+}
+
+void CubemapEnvironment::FillProperties(ParsedBlock& pb)
+{
+    Environment::FillProperties(pb);
+
+    char folder[256];
+
+    pb.RequiredProp("folder");
+    pb.GetFilenameProp("folder", folder);
+
+    if (!LoadMaps(folder))
+        fprintf(stderr, "CubemapEnvironment: Could not load maps from `%s'\n", folder);
 }

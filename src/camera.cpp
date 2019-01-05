@@ -3,7 +3,7 @@
 #include "sdl.h"
 #include "utils.h"
 
-void Camera::FrameBegin()
+void Camera::BeginFrame()
 {
     double wantedAngle = ToRadians(m_FOV/2.);
     double wantedLength = tan(wantedAngle);
@@ -38,4 +38,15 @@ Ray Camera::GetScreenRay(double x, double y) const
     ray.dir.Normalize();
 
     return ray;
+}
+
+void Camera::FillProperties(ParsedBlock& pb)
+{
+    pb.RequiredProp("position");
+    pb.GetVectorProp("position", &m_Position);
+    pb.GetDoubleProp("aspectRatio", &m_AspectRatio, 1e-6);
+    pb.GetDoubleProp("fov", &m_FOV, 0.0001, 179);
+    pb.GetDoubleProp("yaw", &m_Yaw);
+    pb.GetDoubleProp("pitch", &m_Pitch, -90, 90);
+    pb.GetDoubleProp("roll", &m_Roll);
 }

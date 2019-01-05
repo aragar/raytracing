@@ -6,7 +6,7 @@
 
 bool InitGraphics(int frameWidth, int frameHeight);
 void CloseGraphics();
-void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE], bool useSRGB);
+void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE], bool useSRGB = false);
 void WaitForUserExit();
 int GetFrameWidth();
 int GetFrameHeight();

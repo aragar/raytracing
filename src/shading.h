@@ -4,32 +4,31 @@
 #include <array>
 
 #include "color.h"
+#include "scene.h"
 #include "vector.h"
 
 class IntersectionInfo;
 class Ray;
 class Texture;
 
-struct Light
-{
-    Vector pos;
-    double intensity;
-};
-
-class Shader
+class Shader : public SceneElement
 {
 public:
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const =0;
     virtual ~Shader() =default;
+
+    virtual ElementType GetElementType() const override { return ElementType::SHADER; }
 };
 
 class Lambert : public Shader
 {
 public:
+    Lambert() = default;
     Lambert(const Color& color);
     Lambert(Texture* texture);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     Color m_Color;
@@ -39,10 +38,12 @@ private:
 class Phong : public Shader
 {
 public:
+    Phong() = default;
     Phong(const Color& color, double specularMultiplier = 1., double specularExponent = 1.);
     Phong(Texture* texture, double specularMultiplier = 1., double specularExponent = 1.);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 protected:
     virtual double GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const;
@@ -65,10 +66,12 @@ protected:
 class OrenNayar : public Shader
 {
 public:
+    OrenNayar() = default;
     OrenNayar(const Color& color, double sigma = 0.);
     OrenNayar(Texture* texture, double sigma = 0.);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb);
 
 private:
     Color m_Color;
@@ -80,7 +83,9 @@ class Reflection : public Shader
 {
 public:
     Reflection(double multiplier = 0.99, double glossiness = 1., int samples = 32);
+
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     double m_Multiplier = 0.99;
@@ -91,8 +96,10 @@ private:
 class Refraction : public Shader
 {
 public:
-    Refraction(double inOutRatio, double multiplier = 0.99);
+    Refraction(double inOutRatio = 1.33, double multiplier = 0.99);
+
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     double m_InOutRatio = 1.;
@@ -106,6 +113,7 @@ public:
     void AddLayer(Shader* shader, Color blend, Texture* texture = nullptr);
 
     virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     struct Layer

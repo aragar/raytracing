@@ -36,38 +36,27 @@ include_directories(${BITMAP_IMAGE_DIRECTORY})
 set(SOURCE_FILES
         ${BITMAP_IMAGE_DIRECTORY}/bitmap_image.hpp
 		src/main.cpp
-		src/color.h
-		src/color.cpp
-		src/utils.h
+		src/color.h src/color.cpp
+		src/utils.h src/utils.cpp
 		src/constants.h
-		src/vector.cpp
-		src/vector.h
-		src/matrix.cpp
-		src/matrix.h
-		src/camera.cpp
-		src/camera.h
-		src/geometry.cpp
-		src/geometry.h
-		src/sdl.cpp
-		src/sdl.h
-		src/shading.cpp
-		src/shading.h
+		src/vector.cpp src/vector.h
+		src/matrix.cpp src/matrix.h
+		src/camera.cpp src/camera.h
+		src/geometry.cpp src/geometry.h
+		src/sdl.cpp src/sdl.h
+		src/shading.cpp src/shading.h
 		src/ray.h
-		src/bitmap.cpp
-		src/bitmap.h
-		src/texture.cpp
-		src/texture.h
-		src/shadinghelper.cpp
-		src/shadinghelper.h
-		src/utils.cpp
-        src/environment.h
-        src/environment.cpp
-        src/colors.h
-        src/colors.cpp
-        src/meshdata.cpp
-        src/meshdata.h
-        src/mesh.cpp
-        src/mesh.h)
+		src/bitmap.cpp src/bitmap.h
+		src/texture.cpp src/texture.h
+		src/shadinghelper.cpp src/shadinghelper.h
+        src/environment.h src/environment.cpp
+        src/colors.h src/colors.cpp
+        src/meshdata.cpp src/meshdata.h
+        src/mesh.cpp src/mesh.h
+		src/transform.h src/transform.cpp
+		src/scene.cpp src/scene.h
+		src/random_generator.cpp src/random_generator.h
+		src/light.cpp src/light.h)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

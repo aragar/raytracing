@@ -1,23 +1,23 @@
 #include "shading.h"
 
 #include "colors.h"
+#include "light.h"
 #include "shadinghelper.h"
 #include "texture.h"
 
-extern Color g_AmbientLight;
-extern std::vector<Light> g_Lights;
+#include <cstring>
 
 Color Lambert::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
     const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
-    Color result = diffuse*g_AmbientLight;
+    Color result = diffuse*scene.settings.ambientLight;
 
-    for (const Light& light : g_Lights)
+    for (const Light* light : scene.lights)
     {
-        const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
+        const Vector lightDir = Normalize(info.ip - light->pos); // from light towards the intersection point
         const Vector normal = Faceforward(lightDir, info.normal); // orient so that surface points to the light
         const double lambertCoeff = Dot(normal, -lightDir);
-        const double lightContribution = ShadingHelper::GetLightContribution(info, light);
+        const double lightContribution = ShadingHelper::GetLightContribution(info, *light);
         result += diffuse*lambertCoeff*lightContribution;
     }
 
@@ -33,6 +33,12 @@ Lambert::Lambert(Texture* texture)
 : m_Texture(texture)
 {}
 
+void Lambert::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color", &m_Color);
+    pb.GetTextureProp("texture", &m_Texture);
+}
+
 double Phong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
 {
     const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
@@ -46,15 +52,15 @@ double Phong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, con
 Color Phong::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
     const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
-    Color result = diffuse*g_AmbientLight;
+    Color result = diffuse*scene.settings.ambientLight;
 
-    for (const Light& light : g_Lights)
+    for (const Light* light : scene.lights)
     {
-        const Vector lightDir = Normalize(info.ip - light.pos); // from light towards the intersection point
+        const Vector lightDir = Normalize(info.ip - light->pos); // from light towards the intersection point
         const Vector normal = Faceforward(lightDir, info.normal); // orient so that the surface points to the light
         const double lambertCoeff = Dot(normal, -lightDir);
-        const double lightContribution = ShadingHelper::GetLightContribution(info, light);
-        const double specularCoeff = GetSpecularCoeff(ray, info, light);
+        const double lightContribution = ShadingHelper::GetLightContribution(info, *light);
+        const double specularCoeff = GetSpecularCoeff(ray, info, *light);
         result += diffuse*lambertCoeff*lightContribution
                   + Color{1.f, 1.f, 1.f}*specularCoeff*m_SpecularMultiplier*lightContribution;
     }
@@ -76,6 +82,14 @@ Phong::Phong(Texture* texture, double specularMultiplier, double specularExponen
 {
 }
 
+void Phong::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color", &m_Color);
+    pb.GetTextureProp("texture", &m_Texture);
+    pb.GetDoubleProp("specularMultiplier", &m_SpecularMultiplier);
+    pb.GetDoubleProp("specularExponent", &m_SpecularExponent);
+}
+
 double BlinnPhong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info, const Light& light) const
 {
     Vector lightDir = Normalize(light.pos - info.ip);
@@ -89,13 +103,13 @@ Color OrenNayar::Shade(const Ray& ray, const IntersectionInfo& info) const
 {
     // http://mimosa-pudica.net/improved-oren-nayar.html
     const Color diffuse = m_Texture ? m_Texture->Sample(info) : m_Color;
-    Color result = diffuse*g_AmbientLight;
+    Color result = diffuse*scene.settings.ambientLight;
 
     const double sigma2 = Sqr(m_Sigma);
     const double VdotN = Dot(-ray.dir, info.normal);
-    for (const Light& light : g_Lights)
+    for (const Light* light : scene.lights)
     {
-        const Vector lightDir = Normalize(light.pos - info.ip);
+        const Vector lightDir = Normalize(light->pos - info.ip);
         const double LdotV = Dot(lightDir, -ray.dir);
         const double LdotN = Dot(lightDir, info.normal);
         const double s = LdotV - LdotN*VdotN;
@@ -104,7 +118,7 @@ Color OrenNayar::Shade(const Ray& ray, const IntersectionInfo& info) const
         const double b = 0.45 * sigma2 / (sigma2 + 0.09);
 
         const double orenNayarCoeff = LdotN*(a + b*s/t);
-        const double lightContribution = ShadingHelper::GetLightContribution(info, light);
+        const double lightContribution = ShadingHelper::GetLightContribution(info, *light);
         result += diffuse*orenNayarCoeff*lightContribution;
     }
 
@@ -121,6 +135,13 @@ OrenNayar::OrenNayar(Texture* texture, double sigma)
 : m_Texture(texture)
 , m_Sigma(sigma)
 {
+}
+
+void OrenNayar::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color", &m_Color);
+    pb.GetTextureProp("texture", &m_Texture);
+    pb.GetDoubleProp("sigma", &m_Sigma);
 }
 
 Reflection::Reflection(double multiplier, double glossiness, int samples)
@@ -176,6 +197,13 @@ Color Reflection::Shade(const Ray& ray, const IntersectionInfo& info) const
     return result;
 }
 
+void Reflection::FillProperties(ParsedBlock& pb)
+{
+    pb.GetDoubleProp("multiplier", &m_Multiplier);
+    pb.GetDoubleProp("glossiness", &m_Glossiness, 0., 1.);
+    pb.GetIntProp("numSamples", &m_Samples, 1);
+}
+
 Refraction::Refraction(double inOutRatio, double multiplier)
 : m_InOutRatio(inOutRatio)
 , m_Multiplier(multiplier)
@@ -209,6 +237,12 @@ Color Refraction::Shade(const Ray& ray, const IntersectionInfo& info) const
     return color;
 }
 
+void Refraction::FillProperties(ParsedBlock& pb)
+{
+    pb.GetDoubleProp("multiplier", &m_Multiplier);
+    pb.GetDoubleProp("ior", &m_InOutRatio, 1e-6, 10.);
+}
+
 Layered::Layered()
 : m_NumLayers(0)
 {
@@ -239,3 +273,68 @@ Color Layered::Shade(const Ray& ray, const IntersectionInfo& info) const
 
     return result;
 }
+
+void Layered::FillProperties(ParsedBlock& pb)
+{
+    char name[128];
+    char value[256];
+    int srcLine;
+    for (int i = 0; i < pb.GetBlockLines(); i++)
+    {
+        // fetch and parse all lines like "layer <shader>, <color>[, <texture>]"
+        pb.GetBlockLine(i, srcLine, name, value);
+        if (!strcmp(name, "layer"))
+        {
+            char shaderName[200];
+            char textureName[200] = "";
+            bool err = false;
+            if (!GetFrontToken(value, shaderName))
+            {
+                err = true;
+            }
+            else
+            {
+                StripPunctuation(shaderName);
+            }
+
+            if (!strlen(value)) err = true;
+
+            if (!err && value[strlen(value) - 1] != ')')
+            {
+                if (!GetLastToken(value, textureName))
+                {
+                    err = true;
+                }
+                else
+                {
+                    StripPunctuation(textureName);
+                }
+            }
+
+            if (!err && !strcmp(textureName, "nullptr"))
+                strcpy(textureName, "");
+
+            Shader* shader = nullptr;
+            Texture* texture = nullptr;
+            if (!err)
+            {
+                shader = pb.GetParser().FindShaderByName(shaderName);
+                err = (shader == nullptr);
+            }
+
+            if (!err && strlen(textureName))
+            {
+                texture = pb.GetParser().FindTextureByName(textureName);
+                err = (texture == nullptr);
+            }
+
+            if (err) throw SyntaxError(srcLine, "Expected a line like `layer <shader>, <color>[, <texture>]'");
+
+            double x, y, z;
+            Get3Doubles(srcLine, value, x, y, z);
+            AddLayer(shader, Color((float) x, (float) y, (float) z), texture);
+        }
+    }
+}
+
+

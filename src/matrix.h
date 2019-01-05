@@ -8,7 +8,7 @@ struct Matrix
     const static unsigned SIZE = 3;
     double m[SIZE][SIZE];
 
-    Matrix() :Matrix(0.) {}
+    Matrix() : Matrix(0.) {}
     Matrix(const double diagonal);
 };
 
@@ -23,5 +23,7 @@ double Determinant(const Matrix& a);
 Matrix RotationAroundX(double angle);
 Matrix RotationAroundY(double angle);
 Matrix RotationAroundZ(double angle);
+
+Matrix Transpose(const Matrix& a);
 
 #endif //RAYTRACING_MATRIX_H

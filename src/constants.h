@@ -1,6 +1,9 @@
 #ifndef RAYTRACING_CONSTANTS_H
 #define RAYTRACING_CONSTANTS_H
 
+const float LARGE_FLOAT = 1e17f;
+const double LARGE_DOUBLE = 1e120;
+
 const unsigned VFB_MAX_SIZE = 1920;
 const unsigned RESX = 640;
 const unsigned RESY = 480;

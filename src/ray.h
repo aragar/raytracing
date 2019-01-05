@@ -7,7 +7,7 @@ struct Ray
 {
     Vector start;
     Vector dir; // normalized
-    int depth = 0;
+    unsigned depth = 0;
     bool debug = false;
 };
 

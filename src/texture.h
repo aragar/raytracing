@@ -2,22 +2,26 @@
 #define RAYTRACING_TEXTURE_H
 
 #include "color.h"
+#include "scene.h"
 #include "geometry.h"
 
 struct IntersectionInfo;
-class Texture
+class Texture : public SceneElement
 {
 public:
     virtual Color Sample(const IntersectionInfo& info) const =0;
-    virtual ~Texture() {}
+    virtual ~Texture() override {}
+
+    virtual ElementType GetElementType() const override { return ElementType::TEXTURE; }
 };
 
 class ConstantColorTexture : public Texture
 {
 public:
-    ConstantColorTexture(const Color& color);
+    ConstantColorTexture(const Color& color = Colors::BLACK);
 
     virtual Color Sample(const IntersectionInfo&) const override { return m_Color; }
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     Color m_Color;
@@ -26,9 +30,11 @@ private:
 class CheckerTexture : public Texture
 {
 public:
+    CheckerTexture() = default;
     CheckerTexture(const Color& color1, const Color& color2, double scaling);
 
     virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     double m_Scaling = 1.;
@@ -39,9 +45,11 @@ private:
 class MandelbrotTexture : public Texture
 {
 public:
+    MandelbrotTexture() = default;
     MandelbrotTexture(double scaling, const Color& color1, const Color& color2);
 
     virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     double m_Scaling = 1.;
@@ -52,28 +60,31 @@ private:
 class ProceduralTexture : public Texture
 {
 public:
-    ProceduralTexture();
-
-    virtual Color Sample(const IntersectionInfo& info) const override ;
+    virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
-    static const unsigned NUM = 3;
+    struct ProceduralLine
+    {
+        Color colorU;
+        double freqU;
 
-    Color m_ColorU[NUM];
-    double m_FreqU[NUM];
+        Color colorV;
+        double freqV;
+    };
 
-    Color m_ColorV[NUM];
-    double m_FreqV[NUM];
+    std::vector<ProceduralLine> m_Lines;
 };
 
 class Bitmap;
 class BitmapTexture : public Texture
 {
 public:
-    BitmapTexture(const char* filename, double scaling = 1.0, bool useBilinearFiltering = false);
+    BitmapTexture(const char* filename = nullptr, double scaling = 1.0, bool useBilinearFiltering = false);
     virtual ~BitmapTexture() override;
 
     virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     Bitmap* m_Bitmap = nullptr;
@@ -84,8 +95,10 @@ private:
 class Fresnel : public Texture
 {
 public:
-    Fresnel(double inOutRatio);
+    Fresnel(double inOutRatio = 1.33);
+
     virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
     double m_InOutRatio = 1.;

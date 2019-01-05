@@ -1,7 +1,9 @@
 #include "shadinghelper.h"
 
 #include <vector>
+
 #include "geometry.h"
+#include "light.h"
 #include "shading.h"
 
 extern std::vector<Node> g_Nodes;
@@ -26,13 +28,13 @@ bool ShadingHelper::CheckVisibility(const Vector& start, const Vector& end)
 
     double targetDistSq = (end - start).LengthSqr();
 
-    for ( Node& node : g_Nodes )
+    for (Node* node : scene.nodes)
     {
         IntersectionInfo info;
-        if ( !node.geometry->Intersect(ray, info) )
+        if (!node->Intersect(ray, info))
             continue;
 
-        if ( info.distance*info.distance < targetDistSq )
+        if (Sqr(info.distance) < targetDistSq)
             return false;
     }
 

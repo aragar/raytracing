@@ -4,8 +4,9 @@
 #include "matrix.h"
 #include "ray.h"
 #include "vector.h"
+#include "scene.h"
 
-class Camera
+class Camera : public SceneElement
 {
 public:
     void SetPosition(const Vector& position) { m_Position = position; }
@@ -15,7 +16,11 @@ public:
     void SetAspectRatio(double AspectRatio) { m_AspectRatio = AspectRatio; }
     void SetFOV(double FOV) { m_FOV = FOV; }
 
-    void FrameBegin();
+    virtual ElementType GetElementType() const override { return ElementType::CAMERA; }
+    virtual void BeginFrame() override;
+
+    virtual void FillProperties(ParsedBlock& pb) override;
+
     Ray GetScreenRay(double x, double y) const;
 
 private:
@@ -26,12 +31,12 @@ private:
     Vector m_Position;
     Matrix m_Rotation;
 
-    double m_Yaw;
-    double m_Pitch;
-    double m_Roll;
+    double m_Yaw = 0.;
+    double m_Pitch = 0.;
+    double m_Roll = 0.;
 
-    double m_AspectRatio;
-    double m_FOV;
+    double m_AspectRatio = 4./3.;
+    double m_FOV = 90.;
 };
 
 #endif //RAYTRACING_CAMERA_H

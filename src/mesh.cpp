@@ -2,10 +2,21 @@
 
 #include <numeric>
 
+#include "meshdata.h"
+
 Mesh::Mesh(bool isFaceted, bool backCulling)
 : m_Faceted(isFaceted)
 , m_BackCulling(backCulling)
 {
+}
+
+Mesh::~Mesh()
+{
+    if (m_BoundingGeometry)
+    {
+        delete m_BoundingGeometry;
+        m_BoundingGeometry = nullptr;
+    }
 }
 
 bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -31,12 +42,6 @@ bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 bool Mesh::IsInside(const Vector& point) const
 {
     return false;
-}
-
-void Mesh::Translate(const Vector& amount)
-{
-    for (Vector& vertex : m_Vertices)
-        vertex += amount;
 }
 
 void Mesh::ComputeBoundingGeometry()
@@ -111,4 +116,19 @@ bool Mesh::Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionI
     outInfo.geometry = this;
 
     return true;
+}
+
+void Mesh::FillProperties(ParsedBlock& pb)
+{
+    pb.GetBoolProp("faceted", &m_Faceted);
+    pb.GetBoolProp("isTetraeder", &m_IsTetraeder);
+}
+
+void Mesh::BeginRender()
+{
+    if (m_IsTetraeder) GenerateTetraeder();
+    else GenerateTruncatedIcosahedron();
+
+    printf("Mesh loaded, %u triangles\n", m_Triangles.size());
+    ComputeBoundingGeometry();
 }

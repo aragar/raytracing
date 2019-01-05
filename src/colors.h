@@ -10,6 +10,7 @@ public:
     static const Color WHITE;
     static const Color YELLOW;
     static const Color GREEN;
+    static const Color BLACK;
 };
 
 #endif //RAYTRACING_COLORS_H

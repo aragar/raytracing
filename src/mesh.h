@@ -3,6 +3,7 @@
 
 #include "geometry.h"
 #include "vector.h"
+#include "scene.h"
 
 #include <array>
 #include <vector>
@@ -19,6 +20,7 @@ class Mesh : public Geometry
 {
 public:
     Mesh(bool isFaceted = true, bool backCulling = true);
+    virtual ~Mesh() override;
 
     void SetFaceted(bool faceted) { m_Faceted = faceted; }
     void SetBackCulling(bool backCulling) { m_BackCulling = backCulling; }
@@ -27,7 +29,8 @@ public:
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
 
-    void Translate(const Vector& amount);
+    virtual void FillProperties(ParsedBlock& pb) override;
+    virtual void BeginRender() override;
 
 private:
     std::vector<Vector> m_Vertices;
@@ -39,11 +42,12 @@ private:
 
     bool m_Faceted = true;
     bool m_BackCulling = true;
+    bool m_IsTetraeder = false;
 
     bool Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionInfo& outInfo) const;
 
-    friend Mesh* GenerateTetraeder();
-    friend Mesh* GenerateTruncatedIcosahedron();
+    void GenerateTetraeder();
+    void GenerateTruncatedIcosahedron();
 };
 
 

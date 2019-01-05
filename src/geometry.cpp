@@ -32,9 +32,15 @@ bool Plane::IsInside(const Vector& point) const
 }
 
 Plane::Plane(double height, double limit)
-: m_Height(height),
-  m_Limit(limit)
+: m_Height(height)
+, m_Limit(limit)
 {
+}
+
+void Plane::FillProperties(ParsedBlock& pb)
+{
+    pb.GetDoubleProp("height", &m_Height);
+    pb.GetDoubleProp("limit", &m_Limit);
 }
 
 bool Sphere::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -84,9 +90,15 @@ bool Sphere::IsInside(const Vector& point) const
 }
 
 Sphere::Sphere(const Vector& center, double radius)
-: m_Center(center),
-  m_Radius(radius)
+: m_Center(center)
+, m_Radius(radius)
 {
+}
+
+void Sphere::FillProperties(ParsedBlock& pb)
+{
+    pb.GetVectorProp("center", &m_Center);
+    pb.GetDoubleProp("radius", &m_Radius, 0.f);
 }
 
 bool Cube::IntersectSide(double level, double start, double dir, const Ray& ray, const Vector& normal, IntersectionInfo& outInfo) const
@@ -145,9 +157,15 @@ bool Cube::IsInside(const Vector& point) const
 }
 
 Cube::Cube(const Vector& center, double halfSide)
-: m_Center(center),
-  m_HalfSide(halfSide)
+: m_Center(center)
+, m_HalfSide(halfSide)
 {
+}
+
+void Cube::FillProperties(ParsedBlock& pb)
+{
+    pb.GetVectorProp("center", &m_Center);
+    pb.GetDoubleProp("halfSide", &m_HalfSide);
 }
 
 bool CsgOp::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -211,9 +229,18 @@ bool CsgOp::IsInside(const Vector& point) const
 }
 
 CsgOp::CsgOp(Geometry* left, Geometry* right)
-: m_Left(left),
-  m_Right(right)
+: m_Left(left)
+, m_Right(right)
 {
+}
+
+void CsgOp::FillProperties(ParsedBlock& pb)
+{
+    pb.RequiredProp("left");
+    pb.RequiredProp("right");
+
+    pb.GetGeometryProp("left", &m_Left);
+    pb.GetGeometryProp("right", &m_Right);
 }
 
 bool RegularPolygon::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -263,8 +290,45 @@ bool RegularPolygon::IsInside(const Vector& point) const
 }
 
 RegularPolygon::RegularPolygon(const Vector& center, double radius, unsigned int sides)
-: m_Center(center),
-  m_Radius(radius),
-  m_Sides(Max(sides, 3))
+: m_Center(center)
+, m_Radius(radius)
+, m_Sides(Max(sides, 3))
 {
+}
+
+void RegularPolygon::FillProperties(ParsedBlock& pb)
+{
+    pb.GetVectorProp("center", &m_Center);
+    pb.GetDoubleProp("radius", &m_Radius, 0.);
+    pb.GetUnsignedProp("sides", &m_Sides);
+}
+
+bool Node::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
+{
+    // world space -> object's canonic space
+    Ray rayCanonic = ray;
+    rayCanonic.start = transform.UndoPoint(ray.start);
+    rayCanonic.dir = transform.UndoDirection(ray.dir);
+
+    double rayDirLength = rayCanonic.dir.Length();
+    rayCanonic.dir.Normalize();
+    if (!geometry->Intersect(rayCanonic, outInfo))
+        return false;
+
+    // The intersection found is in object space, convert to world space:
+    outInfo.normal = transform.Normal(outInfo.normal);
+    outInfo.normal.Normalize();
+//	outInfo.dNdx = normalize(transform.direction(outInfo.dNdx));
+//	outInfo.dNdy = normalize(transform.direction(outInfo.dNdy));
+    outInfo.ip = transform.Point(outInfo.ip);
+    outInfo.distance /= rayDirLength;  // (5)
+    return true;
+}
+
+void Node::FillProperties(ParsedBlock& pb)
+{
+    pb.GetGeometryProp("geometry", &geometry);
+    pb.GetShaderProp("shader", &shader);
+    pb.GetTransformProp(transform);
+    pb.GetTextureProp("bump", &bump);
 }
