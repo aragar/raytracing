@@ -122,7 +122,7 @@ void ConstantColorTexture::FillProperties(ParsedBlock& pb)
     pb.GetColorProp("color", &m_Color);
 }
 
-BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilinearFiltering)
+BitmapHelper::BitmapHelper(const char* filename, double scaling, bool useBilinearFiltering)
 : m_Scaling(1./scaling)
 , m_UseBilinearFiltering(useBilinearFiltering)
 {
@@ -131,50 +131,98 @@ BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilin
         m_Bitmap->LoadImage(filename);
 }
 
-BitmapTexture::~BitmapTexture()
+BitmapHelper::~BitmapHelper()
 {
     delete m_Bitmap;
 }
 
-Color BitmapTexture::Sample(const IntersectionInfo& info) const
+Color BitmapHelper::GetColor(double u, double v) const
 {
     Color result;
-    if (!m_UseBilinearFiltering)
+    if (m_UseBilinearFiltering)
     {
-        int x = (int) floor(info.u * m_Scaling * m_Bitmap->GetWidth());
-        int y = (int) floor(info.v * m_Scaling * m_Bitmap->GetHeight());
-
-        // 0 <= x < bitmap.width
-        // 0 <= y < bitmap.height
-        x %= m_Bitmap->GetWidth();
-        if ( x < 0 )
-            x += m_Bitmap->GetWidth();
-
-        y %= m_Bitmap->GetHeight();
-        if ( y < 0 )
-            y += m_Bitmap->GetHeight();
-
-        result = m_Bitmap->GetPixel(x, y);
+        double x, y;
+        GetCoords(u, v, x, y);
+        result = m_Bitmap->GetBilinearFilteredPixel(x, y);
     }
     else
     {
-        const double x = info.u * m_Scaling * m_Bitmap->GetWidth();
-        const double y = info.v * m_Scaling * m_Bitmap->GetHeight();
-        result = m_Bitmap->GetBilinearFilteredPixel(x, y);
+        int x, y;
+        GetCoords(u, v, x, y);
+        result = m_Bitmap->GetPixel(static_cast<unsigned>(x), static_cast<unsigned>(y));
     }
 
     return result;
 }
 
-void BitmapTexture::FillProperties(ParsedBlock& pb)
+void BitmapHelper::GetCoords(double u, double v, int& x, int& y) const
+{
+    const unsigned int width = m_Bitmap->GetWidth();
+    const unsigned int height = m_Bitmap->GetHeight();
+    x = static_cast<int>(floor(u * m_Scaling * width));
+    y = static_cast<int>(floor(v * m_Scaling * height));
+
+    // 0 <= x < bitmap.width
+    // 0 <= y < bitmap.height
+    x %= width;
+    if ( x < 0 )
+        x += width;
+
+    y %= height;
+    if ( y < 0 )
+        y += height;
+}
+
+void BitmapHelper::GetCoords(double u, double v, double& x, double& y) const
+{
+    const unsigned int width = m_Bitmap->GetWidth();
+    const unsigned int height = m_Bitmap->GetHeight();
+    x = u * m_Scaling * m_Bitmap->GetWidth();
+    y = v * m_Scaling * m_Bitmap->GetHeight();
+    int xx = static_cast<int>(floor(x));
+    int yy = static_cast<int>(floor(y));
+    const double dx = x - xx;
+    const double dy = y - yy;
+
+    // 0 <= x < bitmap.width
+    // 0 <= y < bitmap.height
+    xx %= width;
+    if (xx < 0)
+        xx += width;
+
+    yy %= height;
+    if (yy < 0)
+        yy += height;
+
+    x = static_cast<double>(xx) + dx;
+    y = static_cast<double>(yy) + dy;
+}
+
+void BitmapHelper::FillProperties(ParsedBlock& pb)
 {
     pb.GetDoubleProp("scaling", &m_Scaling);
     m_Scaling = 1./m_Scaling;
 
     pb.GetBoolProp("useBilinearFiltering", &m_UseBilinearFiltering);
 
-    if (!pb.GetBitmapFileProp("file", *m_Bitmap));
-        pb.RequiredProp("file");
+    pb.RequiredProp("file");
+    pb.GetBitmapFileProp("file", *m_Bitmap);
+}
+
+BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilinearFiltering)
+: m_BitmapHelper(filename, scaling, useBilinearFiltering)
+{
+}
+
+Color BitmapTexture::Sample(const IntersectionInfo& info) const
+{
+    Color result = m_BitmapHelper.GetColor(info.u, info.v);
+    return result;
+}
+
+void BitmapTexture::FillProperties(ParsedBlock& pb)
+{
+    m_BitmapHelper.FillProperties(pb);
 }
 
 Fresnel::Fresnel(double inOutRatio)
@@ -184,7 +232,7 @@ Fresnel::Fresnel(double inOutRatio)
 
 Color Fresnel::Sample(const IntersectionInfo& info) const
 {
-    double fresnel = 0.;
+    double fresnel;
     if (info.normal * info.rayDir > 0)
         fresnel = FresnelRatio(info.rayDir, -info.normal, 1. / m_InOutRatio);
     else

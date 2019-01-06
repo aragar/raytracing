@@ -150,4 +150,5 @@ Node soccer_ball {
 // 8. And, finally, an environment
 CubemapEnvironment {
 	folder "env/forest"
+    useBilinearFiltering true
 }

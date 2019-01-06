@@ -111,11 +111,11 @@ void CubemapEnvironment::FillProperties(ParsedBlock& pb)
 {
     Environment::FillProperties(pb);
 
-    char folder[256];
+    pb.GetBoolProp("useBilinearFiltering", &m_UseBilinearFiltering);
 
+    char folder[256];
     pb.RequiredProp("folder");
     pb.GetFilenameProp("folder", folder);
-
     if (!LoadMaps(folder))
         fprintf(stderr, "CubemapEnvironment: Could not load maps from `%s'\n", folder);
 }

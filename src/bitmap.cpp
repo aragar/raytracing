@@ -136,8 +136,8 @@ bool Bitmap::LoadEXR(const char* filename)
         Imf::RgbaInputFile exr(filename);
         Imf::Array2D<Imf::Rgba> pixels;
         Imath::Box2i dw = exr.dataWindow();
-        m_Width  = dw.max.x - dw.min.x + 1;
-        m_Height = dw.max.y - dw.min.y + 1;
+        m_Width  = static_cast<unsigned>(dw.max.x - dw.min.x + 1);
+        m_Height = static_cast<unsigned>(dw.max.y - dw.min.y + 1);
         pixels.resizeErase(m_Height, m_Width);
         exr.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * m_Width, 1, m_Width);
         exr.readPixels(dw.min.y, dw.max.y);
@@ -202,20 +202,13 @@ bool Bitmap::SaveImage(const char* filename)
 
 Color Bitmap::GetBilinearFilteredPixel(double x, double y) const
 {
-    int xx = floor(x);
-    int yy = floor(y);
+    const unsigned xx = static_cast<unsigned>(floor(x));
+    const unsigned yy = static_cast<unsigned>(floor(y));
     const double p = x - xx;
     const double q = y - yy;
 
     const unsigned width = GetWidth();
-    xx %= width;
-    if (xx < 0)
-        xx += width;
-
     const unsigned height = GetHeight();
-    yy %= height;
-    if (yy < 0)
-        yy += height;
 
     const Color center    = GetPixel(xx, yy);
     const Color right     = GetPixel((xx + 1) % width, yy);

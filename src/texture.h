@@ -76,20 +76,41 @@ private:
     std::vector<ProceduralLine> m_Lines;
 };
 
-class Bitmap;
-class BitmapTexture : public Texture
+class BitmapHelper
 {
 public:
-    BitmapTexture(const char* filename = nullptr, double scaling = 1.0, bool useBilinearFiltering = false);
-    virtual ~BitmapTexture() override;
+    BitmapHelper(const char* filename = nullptr, double scaling = 1., bool useBilinearFiltering = false);
+    ~BitmapHelper();
 
-    virtual Color Sample(const IntersectionInfo& info) const override;
-    virtual void FillProperties(ParsedBlock& pb) override;
+    Color GetColor(double u, double v) const;
+
+    void FillProperties(ParsedBlock& pb);
 
 private:
     Bitmap* m_Bitmap = nullptr;
     double m_Scaling = 1.;
     bool m_UseBilinearFiltering = false;
+
+    void GetCoords(double u, double v, int& x, int& y) const;
+    void GetCoords(double u, double v, double& x, double& y) const;
+};
+
+class Bitmap;
+class BitmapTexture : public Texture
+{
+public:
+    BitmapTexture(const char* filename = nullptr, double scaling = 1.0, bool useBilinearFiltering = false);
+
+    virtual Color Sample(const IntersectionInfo& info) const override;
+    virtual void FillProperties(ParsedBlock& pb) override;
+
+private:
+    BitmapHelper m_BitmapHelper;
+};
+
+class BumpTexture : public Texture
+{
+
 };
 
 class Fresnel : public Texture
