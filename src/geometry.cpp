@@ -318,8 +318,8 @@ bool Node::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     // The intersection found is in object space, convert to world space:
     outInfo.normal = transform.Normal(outInfo.normal);
     outInfo.normal.Normalize();
-//	outInfo.dNdx = normalize(transform.direction(outInfo.dNdx));
-//	outInfo.dNdy = normalize(transform.direction(outInfo.dNdy));
+	outInfo.dNdx = Normalize(transform.Direction(outInfo.dNdx));
+	outInfo.dNdy = Normalize(transform.Direction(outInfo.dNdy));
     outInfo.ip = transform.Point(outInfo.ip);
     outInfo.distance /= rayDirLength;  // (5)
     return true;
