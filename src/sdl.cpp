@@ -1,5 +1,6 @@
 #include "sdl.h"
 #include "camera.h"
+#include "bitmap.h"
 
 #include <cstdio>
 #include <SDL.h>
@@ -47,6 +48,55 @@ void DisplayVFB(Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE], bool useSRGB)
     SDL_Flip(screen);
 }
 
+void FindUnusedFilename(char filename[], const char* suffix)
+{
+    char tmp[256];
+    int index = 0;
+    while (1)
+    {
+        sprintf(tmp, "quad_damage_%04d.bmp", index);
+        FILE* f = fopen(tmp, "rb");
+        if (!f)
+        {
+            sprintf(tmp, "quad_damage_%04d.exr", index);
+            f = fopen(tmp, "rb");
+        }
+
+        if (!f)
+            break;
+
+        fclose(f);
+        ++index;
+    }
+
+    sprintf(filename, "quad_damage_%04d.%s", index, suffix);
+}
+
+bool TakeScreenshot(const char* filename)
+{
+    extern Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
+
+    Bitmap bmp;
+    const unsigned width = static_cast<unsigned>(GetFrameWidth());
+    const unsigned height = static_cast<unsigned>(GetFrameHeight());
+    bmp.GenerateEmptyImage(width, height);
+    for (unsigned y = 0; y < height; ++y)
+        for (unsigned x = 0; x < width; ++x)
+            bmp.SetPixel(x, y, vfb[y][x]);
+
+    bool result = bmp.SaveImage(filename);
+    if (result) printf("Saved a screenshot as '%s'\n", filename);
+    else printf("Failed to take a screenshot\n");
+    return result;
+}
+
+bool TakeScreenshotAuto(Bitmap::OutputFormat format)
+{
+    char filename[256];
+    FindUnusedFilename(filename, format == Bitmap::OutputFormat::BMP ? "bmp" : "exr");
+    return TakeScreenshot(filename);
+}
+
 void WaitForUserExit()
 {
     SDL_Event event;
@@ -64,6 +114,10 @@ void WaitForUserExit()
                     {
                         case SDLK_ESCAPE:
                             return;
+                        case SDLK_F12:
+                            if (event.key.keysym.mod & (KMOD_LSHIFT | KMOD_RSHIFT)) TakeScreenshotAuto(Bitmap::OutputFormat::EXR);
+                            else TakeScreenshotAuto(Bitmap::OutputFormat::BMP);
+                            break;
                         default:
                             break;
                     }

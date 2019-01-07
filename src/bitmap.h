@@ -28,6 +28,12 @@ public:
     bool LoadEXR(const char* filename);
     bool SaveEXR(const char* filename);
 
+    enum class OutputFormat
+    {
+        BMP,
+        EXR
+    };
+
     virtual bool LoadImage(const char* filename);
     virtual bool SaveImage(const char* filename);
 
