@@ -10,24 +10,22 @@ extern std::vector<Node> g_Nodes;
 
 double ShadingHelper::GetLightContribution(const IntersectionInfo& info, const Light& light)
 {
-    double distanceToLightSqr = (info.ip - light.pos).LengthSqr();
-
-    Vector start = info.ip + info.normal*1e-6;
-    if ( !ShadingHelper::CheckVisibility(start, light.pos) )
-        return 0;
-
-    double lightContribution = light.intensity / distanceToLightSqr;
+    const Vector start = info.ip + info.normal*1e-6;
+    const float shadowTransparency = ShadingHelper::GetShadowTransparency(start, light.pos);
+    const double distanceToLightSqr = (info.ip - light.pos).LengthSqr();
+    const double lightContribution = shadowTransparency * light.intensity / distanceToLightSqr;
     return lightContribution;
 }
 
-bool ShadingHelper::CheckVisibility(const Vector& start, const Vector& end)
+float ShadingHelper::GetShadowTransparency(const Vector& start, const Vector& end)
 {
     Ray ray;
     ray.start = start;
     ray.dir = Normalize(end - start);
 
-    double targetDistSq = (end - start).LengthSqr();
+    const double targetDistSq = (end - start).LengthSqr();
 
+    float result = 1.f;
     for (Node* node : scene.nodes)
     {
         IntersectionInfo info;
@@ -35,8 +33,8 @@ bool ShadingHelper::CheckVisibility(const Vector& start, const Vector& end)
             continue;
 
         if (Sqr(info.distance) < targetDistSq)
-            return false;
+            result *= node->shadowTransparency;
     }
 
-    return true;
+    return result;
 }

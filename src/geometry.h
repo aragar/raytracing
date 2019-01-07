@@ -145,9 +145,9 @@ struct Node : public Intersectable, public SceneElement
     Shader* shader = nullptr;
     Transform transform;
     Texture* bump = nullptr;
+    float shadowTransparency = 0.f;
 
     Node() = default;
-    Node(Geometry* geometry, Shader* shader);
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
 

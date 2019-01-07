@@ -19,6 +19,8 @@ bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     outInfo.normal = {0., ray.start.y > m_Height ? 1. : -1., 0.};
     outInfo.u = outInfo.ip.x;
     outInfo.v = outInfo.ip.z;
+    outInfo.dNdx = Vector(1, 0, 0);
+    outInfo.dNdy = Vector(0, 0, 1);
     outInfo.geometry = this;
 
     return true;
@@ -127,8 +129,18 @@ bool Cube::IntersectSide(double level, double start, double dir, const Ray& ray,
     outInfo.ip = ip;
     outInfo.distance = distance;
     outInfo.normal = normal;
-    outInfo.u = outInfo.ip.x + outInfo.ip.z;
-    outInfo.v = outInfo.ip.y;
+
+    if (normal.y == 0)
+    {
+        outInfo.u = outInfo.ip.x + outInfo.ip.z;
+        outInfo.v = outInfo.ip.y;
+    }
+    else
+    { // top or bottom
+        outInfo.u = outInfo.ip.x;
+        outInfo.v = outInfo.ip.z;
+    }
+
     outInfo.geometry = this;
 
     return true;
@@ -331,4 +343,5 @@ void Node::FillProperties(ParsedBlock& pb)
     pb.GetShaderProp("shader", &shader);
     pb.GetTransformProp(transform);
     pb.GetTextureProp("bump", &bump);
+    pb.GetFloatProp("shadowTransparency", &shadowTransparency);
 }

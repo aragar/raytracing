@@ -11,7 +11,7 @@ public:
     static double GetLightContribution(const IntersectionInfo& info, const Light& light);
 
 private:
-    static bool CheckVisibility(const Vector& start, const Vector& end);
+    static float GetShadowTransparency(const Vector& start, const Vector& end);
 };
 
 #endif //RAYTRACING_SHADINGHELPER_H

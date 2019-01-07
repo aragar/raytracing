@@ -193,7 +193,7 @@ int main (int argc, char* argv[])
 {
 //    test_random();
     InitRandom(42);
-    if (!scene.ParseScene("../data/bumpmap.qdmg"))
+    if (!scene.ParseScene("../data/window.qdmg"))
     {
         printf("Could not parse the scene!\n");
         return -1;
