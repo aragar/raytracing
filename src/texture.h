@@ -9,8 +9,10 @@ struct IntersectionInfo;
 class Texture : public SceneElement
 {
 public:
-    virtual Color Sample(const IntersectionInfo& info) const =0;
     virtual ~Texture() override {}
+
+    virtual Color Sample(const IntersectionInfo& info) const =0;
+    virtual void ModifyNormal(IntersectionInfo& info) const {}
 
     virtual ElementType GetElementType() const override { return ElementType::TEXTURE; }
 };
@@ -83,6 +85,7 @@ public:
     ~BitmapHelper();
 
     Color GetColor(double u, double v) const;
+    void DifferentiateBitmap();
 
     void FillProperties(ParsedBlock& pb);
 
@@ -110,7 +113,16 @@ private:
 
 class BumpTexture : public Texture
 {
+public:
+    virtual Color Sample(const IntersectionInfo& info) const override { return Colors::BLACK; }
+    virtual void ModifyNormal(IntersectionInfo& info) const override;
 
+    virtual void FillProperties(ParsedBlock& pb) override;
+    virtual void BeginRender() override;
+
+private:
+    BitmapHelper m_BitmapHelper;
+    double m_Strength = 1.;
 };
 
 class Fresnel : public Texture

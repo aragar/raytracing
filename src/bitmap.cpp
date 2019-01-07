@@ -1,6 +1,8 @@
 #include "bitmap.h"
+
 #include "constants.h"
 #include "utils.h"
+#include "bitmap_image.hpp"
 
 #include <cstring>
 #include <cstdio>
@@ -8,8 +10,6 @@
 #include <ImfArray.h>
 #include <Iex.h>
 #include <vector>
-#include "bitmap_image.hpp"
-
 
 Bitmap::Bitmap()
 : m_Width(0),
@@ -61,21 +61,41 @@ class ImageOpenRAII
 {
 public:
     ImageOpenRAII(Bitmap* bitmap)
-    : m_ImageIsOK(false),
-      m_BMP(bitmap)
+    : m_BMP(bitmap)
     {}
 
     ~ImageOpenRAII()
     {
-        if ( !m_ImageIsOK )
-            m_BMP->freeMem();
+        if (!m_ImageIsOK) m_BMP->freeMem();
+        if (m_FP) fclose(m_FP); m_FP = nullptr;
     }
 
     void SetImageIsOK(bool ImageIsOK) { m_ImageIsOK = ImageIsOK; }
+    void SetFile(FILE* fp) { m_FP = fp; }
 
 private:
-    bool m_ImageIsOK;
+    bool m_ImageIsOK = false;
     Bitmap* m_BMP;
+    FILE* m_FP = nullptr;
+};
+
+const int BM_MAGIC = 19778;
+
+struct BmpHeader {
+    int fs;       // filesize
+    int lzero;
+    int bfImgOffset;  // basic header size
+};
+struct BmpInfoHeader {
+    int ihdrsize; 	// info header size
+    int x,y;      	// image dimensions
+    unsigned short channels;// number of planes
+    unsigned short bitsperpixel;
+    int compression; // 0 = no compression
+    int biSizeImage; // used for compression; otherwise 0
+    int pixPerMeterX, pixPerMeterY; // dots per meter
+    int colors;	 // number of used colors. If all specified by the bitsize are used, then it should be 0
+    int colorsImportant; // number of "important" colors (wtf?..)
 };
 
 bool Bitmap::LoadBMP(const char* filename)
@@ -83,29 +103,76 @@ bool Bitmap::LoadBMP(const char* filename)
     freeMem();
     ImageOpenRAII helper(this);
 
-    bitmap_image image(filename);
-    if (!image)
-    {
+    BmpHeader hd;
+    BmpInfoHeader hi;
+    Color palette[256];
+    int toread = 0;
+    unsigned char *xx;
+    int rowsz;
+    unsigned short sign;
+    FILE* fp = fopen(filename, "rb");
+
+    if (fp == NULL) {
         printf("loadBMP: Can't open file: `%s'\n", filename);
         return false;
     }
-
-    const unsigned int height = image.height();
-    const unsigned int width  = image.width();
-    GenerateEmptyImage(width, height);
-    if (!IsOK())
-    {
-        printf("loadBMP: cannot allocate memory for bitmap! Check file integrity!\n");
+    helper.SetFile(fp);
+    if (!fread(&sign, 2, 1, fp)) return false;
+    if (sign != BM_MAGIC) {
+        printf("loadBMP: `%s' is not a BMP file.\n", filename);
         return false;
     }
+    if (!fread(&hd, sizeof(hd), 1, fp)) return false;
+    if (!fread(&hi, sizeof(hi), 1, fp)) return false;
 
-    for (unsigned y = 0; y < height; ++y)
-        for (unsigned x = 0; x < width; ++x)
-        {
-            rgb_t colour;
-            image.get_pixel(x, y, colour);
-            SetPixel(x, y, {colour.red/255.f, colour.green/255.f, colour.blue/255.f});
+    /* header correctness checks */
+    if (!(hi.bitsperpixel == 8 || hi.bitsperpixel == 24 ||  hi.bitsperpixel == 32)) {
+        printf("loadBMP: Cannot handle file format at %d bpp.\n", hi.bitsperpixel);
+        return false;
+    }
+    if (hi.channels != 1) {
+        printf("loadBMP: cannot load multichannel .bmp!\n");
+        return false;
+    }
+    /* ****** header is OK *******/
+
+    // if image is 8 bits per pixel or less (indexed mode), read some pallete data
+    if (hi.bitsperpixel <= 8) {
+        toread = (1 << hi.bitsperpixel);
+        if (hi.colors) toread = hi.colors;
+        for (int i = 0; i < toread; i++) {
+            unsigned temp;
+            if (!fread(&temp, 1, 4, fp)) return false;
+            palette[i] = Color(temp);
         }
+    }
+    toread = hd.bfImgOffset - (54 + toread*4);
+    fseek(fp, toread, SEEK_CUR); // skip the rest of the header
+    int k = hi.bitsperpixel / 8;
+    rowsz = hi.x * k;
+    if (rowsz % 4 != 0)
+        rowsz = (rowsz / 4 + 1) * 4; // round the row size to the next exact multiple of 4
+    xx = new unsigned char[rowsz];
+    GenerateEmptyImage(hi.x, hi.y);
+    if (!IsOK()) {
+        printf("loadBMP: cannot allocate memory for bitmap! Check file integrity!\n");
+        delete [] xx;
+        return false;
+    }
+    for (int j = hi.y - 1; j >= 0; j--) {// bitmaps are saved in inverted y
+        if (!fread(xx, 1, rowsz, fp)) {
+            printf("loadBMP: short read while opening `%s', file is probably incomplete!\n", filename);
+            delete [] xx;
+            return 0;
+        }
+        for (int i = 0; i < hi.x; i++){ // actually read the pixels
+            if (hi.bitsperpixel > 8)
+                SetPixel(i, j, Color(xx[i*k+2]/255.0f, xx[i*k+1]/255.0f, xx[i*k]/255.0f));
+            else
+                SetPixel(i, j,  palette[xx[i*k]]);
+        }
+    }
+    delete [] xx;
 
     helper.SetImageIsOK(true);
     return true;
@@ -113,19 +180,42 @@ bool Bitmap::LoadBMP(const char* filename)
 
 bool Bitmap::SaveBMP(const char* filename)
 {
-    bitmap_image image(filename);
-    if (!image)
-        return false;
+    FILE* fp = fopen(filename, "wb");
+    if (!fp) return false;
+    BmpHeader hd;
+    BmpInfoHeader hi;
+    char xx[VFB_MAX_SIZE * 3];
 
-    for (unsigned y = 0; y < m_Height; ++y)
-        for (unsigned x = 0; x < m_Width; ++x)
-        {
-            unsigned t = GetPixel(x, y).toRGB32();
-            image.set_pixel(x, y, static_cast<const unsigned char>(0xff     & t)
-                                , static_cast<const unsigned char>(0x00ff   & t)
-                                , static_cast<const unsigned char>(0x0000ff & t));
+
+    // fill in the header:
+    int rowsz = m_Width * 3;
+    if (rowsz % 4)
+        rowsz += 4 - (rowsz % 4); // each row in of the image should be filled with zeroes to the next multiple-of-four boundary
+    hd.fs = rowsz * m_Height + 54; //std image size
+    hd.lzero = 0;
+    hd.bfImgOffset = 54;
+    hi.ihdrsize = 40;
+    hi.x = m_Width; hi.y = m_Height;
+    hi.channels = 1;
+    hi.bitsperpixel = 24; //RGB format
+    // set the rest of the header to default values:
+    hi.compression = hi.biSizeImage = 0;
+    hi.pixPerMeterX = hi.pixPerMeterY = 0;
+    hi.colors = hi.colorsImportant = 0;
+
+    fwrite(&BM_MAGIC, 2, 1, fp); // write 'BM'
+    fwrite(&hd, sizeof(hd), 1, fp); // write file header
+    fwrite(&hi, sizeof(hi), 1, fp); // write image header
+    for ( unsigned y = m_Height; y > 0; y--) {
+        for (unsigned x = 0; x < m_Width; x++) {
+            unsigned t = GetPixel(x, y - 1).toRGB32();
+            xx[x * 3    ] = (0xff     & t);
+            xx[x * 3 + 1] = (0xff00   & t) >> 8;
+            xx[x * 3 + 2] = (0xff0000 & t) >> 16;
         }
-
+        fwrite(xx, rowsz, 1, fp);
+    }
+    fclose(fp);
     return true;
 }
 
@@ -217,4 +307,20 @@ Color Bitmap::GetBilinearFilteredPixel(double x, double y) const
 
     const Color result = center*(1 - p)*(1 - q) + right*p*(1 - q) + down*(1 - p)*q + downRight*p*q;
     return result;
+}
+
+void Bitmap::Differentiate()
+{
+    Bitmap bumpTexture;
+    bumpTexture.GenerateEmptyImage(m_Width, m_Height);
+
+    for (unsigned y = 0; y < m_Height; ++y)
+        for (unsigned x = 0; x < m_Width; ++x)
+        {
+            const float dx = GetPixel(x, y).Intensity() - GetPixel((x + 1) % m_Width, y).Intensity();
+            const float dy = GetPixel(x, y).Intensity() - GetPixel(x, (y + 1) % m_Height).Intensity();
+            bumpTexture.SetPixel(x, y, Color(dx, dy, 0));
+        }
+
+    std::swap(m_Data, bumpTexture.m_Data);
 }

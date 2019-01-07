@@ -209,6 +209,11 @@ void BitmapHelper::FillProperties(ParsedBlock& pb)
     pb.GetBitmapFileProp("file", *m_Bitmap);
 }
 
+void BitmapHelper::DifferentiateBitmap()
+{
+    m_Bitmap->Differentiate();
+}
+
 BitmapTexture::BitmapTexture(const char* filename, double scaling, bool useBilinearFiltering)
 : m_BitmapHelper(filename, scaling, useBilinearFiltering)
 {
@@ -246,4 +251,24 @@ Color Fresnel::Sample(const IntersectionInfo& info) const
 void Fresnel::FillProperties(ParsedBlock& pb)
 {
     pb.GetDoubleProp("ior", &m_InOutRatio, 1e-6, 10.);
+}
+
+void BumpTexture::FillProperties(ParsedBlock& pb)
+{
+    m_BitmapHelper.FillProperties(pb);
+    pb.GetDoubleProp("strength", &m_Strength);
+}
+
+void BumpTexture::BeginRender()
+{
+    m_BitmapHelper.DifferentiateBitmap();
+}
+
+void BumpTexture::ModifyNormal(IntersectionInfo& info) const
+{
+    const Color bump = m_BitmapHelper.GetColor(info.u, info.v);
+    const float dx = bump.r;
+    const float dy = bump.g;
+    info.normal += (info.dNdx*dx + info.dNdy*dy) * m_Strength;
+    info.normal.Normalize();
 }

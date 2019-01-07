@@ -8,19 +8,19 @@ GlobalSettings {
 	frameWidth              640
 	frameHeight             480
 	ambientLight            (0.5, 0.5, 0.5)
-	wantAA                  false
+	wantAA                  true
 	wantAdaptiveAA          true
 	aaThreshold             0.1
 	wantProgressiveDisplay  true
     progressiveDisplayDelay 100
-    useSRGM                 false
+    useSRGB                 false
     showAA                  false
     aaDebugColor            (1, 0, 0)
 }
 
 Light {
     pos                 (-90, 1200, -750)
-    lightIntensity      1200000
+    intensity           1200000
 }
 
 // 2. A camera
@@ -35,7 +35,7 @@ Camera camera {
 
 // 3. The floor node:
 Plane floor {
-	y      -0.01
+	height   -0.01
 	limit    200
 }
 
@@ -64,7 +64,7 @@ Node floor {
 // A bump-mapped die:
 
 Mesh die {
-	file 	"geom/truncated_cube.obj"
+	file 	"geometries/truncated_cube.obj"
 	faceted	true
 }
 
@@ -74,7 +74,8 @@ BitmapTexture die_faces {
 
 BumpTexture bump_tex {
 	file	"texture/zar-bump.bmp"
-	strength 40
+	strength 20
+	useBilinearFilter false
 }
 
 Lambert die_faces_diffuse {
@@ -92,11 +93,11 @@ Node die {
 	translate (0, 60, 0)
 	scale (15, 15, 15)
 	rotate (134, 0, 0)
-
-	bump bump_tex
+    bump bump_tex
 }
 
 // An environment:
 CubemapEnvironment {
 	folder "env/forest"
+	useBilinearFiltering true
 }

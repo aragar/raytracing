@@ -1,9 +1,10 @@
 #ifndef RAYTRACING_UTILS_H
 #define RAYTRACING_UTILS_H
 
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
 #include <string>
+#include <vector>
 
 #include "constants.h"
 #include "vector.h"
@@ -35,6 +36,12 @@ inline bool IsZero(const Vector& a, double eps = 1e-6) { return (IsZero(a.x, eps
 inline bool AreEqual(double lhs, double rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
 inline bool AreEqual(const Vector& lhs, const Vector& rhs, double eps = 1e-6) { return IsZero(lhs - rhs, eps); }
 
+int ToInt(const std::string& s);
+double ToDouble(const std::string& s);
+
+std::vector<std::string> Tokenize(const std::string& s);
+std::vector<std::string> Split(const std::string& s, char separator);
+
 std::string UpCaseString(std::string s);
 std::string ExtensionUpper(const char* filename);
 bool FileExists(const char* filename);
@@ -44,6 +51,7 @@ class FileRAII {
 public:
     FileRAII(FILE* init): held(init) {}
     ~FileRAII() { if (held) fclose(held); held = NULL; }
+
     FileRAII(const FileRAII&) = delete;
     FileRAII& operator = (const FileRAII&) = delete;
     FileRAII(const FileRAII&&) = delete;

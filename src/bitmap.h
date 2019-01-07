@@ -31,6 +31,8 @@ public:
     virtual bool LoadImage(const char* filename);
     virtual bool SaveImage(const char* filename);
 
+    void Differentiate();
+
 private:
     unsigned m_Width;
     unsigned m_Height;

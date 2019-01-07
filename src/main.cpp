@@ -9,6 +9,7 @@
 #include "random_generator.h"
 #include "sdl.h"
 #include "shading.h"
+#include "texture.h"
 #include "utils.h"
 
 Color vfb[VFB_MAX_SIZE][VFB_MAX_SIZE];
@@ -41,6 +42,9 @@ Color Raytrace(const Ray& ray)
     if (closestNode)
     {
         closestInfo.rayDir = ray.dir;
+        if (closestNode->bump)
+            closestNode->bump->ModifyNormal(closestInfo);
+
         result = closestNode->shader->Shade(ray, closestInfo);
     }
     else if (scene.environment)
@@ -189,7 +193,7 @@ int main (int argc, char* argv[])
 {
 //    test_random();
     InitRandom(42);
-    if (!scene.ParseScene("../data/lecture7.qdmg"))
+    if (!scene.ParseScene("../data/bumpmap.qdmg"))
     {
         printf("Could not parse the scene!\n");
         return -1;

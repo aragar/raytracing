@@ -3,7 +3,6 @@
 
 #include "geometry.h"
 #include "vector.h"
-#include "scene.h"
 
 #include <array>
 #include <vector>
@@ -14,6 +13,7 @@ struct MeshTriangle
     std::array<int, 3> normals;
     std::array<int, 3> uvs;
     Vector geometryNormal;
+    Vector dNdx, dNdy;
 };
 
 class Mesh : public Geometry
@@ -42,12 +42,11 @@ private:
 
     bool m_Faceted = true;
     bool m_BackCulling = true;
-    bool m_IsTetraeder = false;
 
     bool Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionInfo& outInfo) const;
 
-    void GenerateTetraeder();
-    void GenerateTruncatedIcosahedron();
+    bool LoadFromOBJ(const char* filename);
+    void GenerateTrianglesData();
 };
 
 

@@ -387,38 +387,6 @@ static void StripWhiteSpace(char* s)
     }
 }
 
-std::vector<std::string> Tokenize(std::string s)
-{
-    unsigned i = 0, j, l = s.length();
-    std::vector<std::string> result;
-    while (i < l)
-    {
-        while (i < l && isspace(s[i])) i++;
-        if (i >= l) break;
-        j = i;
-        while (j < l && !isspace(s[j])) j++;
-        result.push_back(s.substr(i, j - i));
-        i = j;
-    }
-    return result;
-}
-
-std::vector<std::string> Split(std::string s, char separator)
-{
-    unsigned i = 0, j, l = s.length();
-    std::vector<std::string> result;
-    while (i < l)
-    {
-        j = i;
-        while (j < l && s[j] != separator) j++;
-        result.push_back(s.substr(i, j - i));
-        i = j + 1;
-        if (j == l - 1) result.push_back("");
-    }
-
-    return result;
-}
-
 bool DefaultSceneParser::Parse(const char* filename, Scene* ss)
 {
     class Random& rnd = GetRandomGen(0);
@@ -919,6 +887,7 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "ProceduralTexture")) return new ProceduralTexture;
     if (!strcmp(className, "BitmapTexture")) return new BitmapTexture;
     if (!strcmp(className, "Fresnel")) return new Fresnel;
+    if (!strcmp(className, "BumpTexture")) return new BumpTexture;
 
     // environment
     if (!strcmp(className, "CubemapEnvironment")) return new CubemapEnvironment;

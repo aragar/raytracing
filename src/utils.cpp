@@ -67,3 +67,59 @@ void GenerateDiscPoint(double& outX, double& outY)
     outX = cos(angle) * radius;
     outY = sin(angle) * radius;
 }
+
+int ToInt(const std::string& s)
+{
+    if (s.empty())
+        return 0;
+
+    int x;
+    if (sscanf(s.c_str(), "%d", &x) == 1)
+        return x;
+
+    return 0;
+}
+
+double ToDouble(const std::string& s)
+{
+    if (s.empty())
+        return 0;
+
+    double x;
+    if (sscanf(s.c_str(), "%lf", &x) == 1)
+        return x;
+
+    return 0;
+}
+
+std::vector<std::string> Tokenize(const std::string& s)
+{
+    unsigned i = 0, j, l = s.length();
+    std::vector<std::string> result;
+    while (i < l)
+    {
+        while (i < l && isspace(s[i])) i++;
+        if (i >= l) break;
+        j = i;
+        while (j < l && !isspace(s[j])) j++;
+        result.push_back(s.substr(i, j - i));
+        i = j;
+    }
+    return result;
+}
+
+std::vector<std::string> Split(const std::string& s, char separator)
+{
+    unsigned i = 0, j, l = s.length();
+    std::vector<std::string> result;
+    while (i < l)
+    {
+        j = i;
+        while (j < l && s[j] != separator) j++;
+        result.push_back(s.substr(i, j - i));
+        i = j + 1;
+        if (j == l - 1) result.push_back("");
+    }
+
+    return result;
+}

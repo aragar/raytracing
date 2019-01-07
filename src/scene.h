@@ -274,7 +274,4 @@ struct Scene
 
 extern Scene scene;
 
-std::vector<std::string> Tokenize(std::string s);
-std::vector<std::string> Split(std::string s, char separator);
-
 #endif //RAYTRACING_SCENE_H
