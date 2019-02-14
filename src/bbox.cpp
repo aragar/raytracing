@@ -139,9 +139,11 @@ double BBox::ClosestIntersection(const Ray& ray) const
 
 bool BBox::IntersectTriangle(const Vector& a, const Vector& b, const Vector& c) const
 {
+    // 1. Is a vertex inside
     if (IsInside(a) || IsInside(b) || IsInside(c))
         return true;
 
+    // 2. Is an edge intersecting
     Ray ray;
     Vector t[3] = { a, b, c };
     for (int i = 0; i < 3; ++i)
@@ -158,6 +160,7 @@ bool BBox::IntersectTriangle(const Vector& a, const Vector& b, const Vector& c) 
             }
         }
 
+    // 3. is the core intersecting
     const Vector ab = b - a;
     const Vector ac = c - a;
     const Vector ABCrossAC = ab ^ ac;
