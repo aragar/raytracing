@@ -10,7 +10,7 @@ Mesh::Mesh(bool isFaceted, bool backCulling)
 
 bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
-    if (m_BBox.TestIntersect(ray))
+    if (!m_BBox.TestIntersect(ray))
         return false;
 
     bool found = false;
