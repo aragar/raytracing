@@ -55,7 +55,7 @@ Color Raytrace(const Ray& ray)
     return result;
 }
 
-bool isTooDifferent(int x, int y)
+bool IsTooDifferent(int x, int y)
 {
     const int dx[] = {0,  0, -1, 1, -1, -1, 1,  1};
     const int dy[] = {1, -1,  0, 0, -1,  1, 1, -1};
@@ -82,37 +82,28 @@ bool isTooDifferent(int x, int y)
     return false;
 }
 
-void simpleRender()
+bool SimpleRender()
 {
     SetWindowCaption("Quad Damage: Simple Pass");
 
-    Uint32 lastTicks = SDL_GetTicks();
-
-    const int frameWidth = GetFrameWidth();
-    const int frameHeight = GetFrameHeight();
-    for (int y = 0; y < frameHeight; ++y)
+    std::vector<Rect> buckets = GetBucketList();
+    for (Rect& r : buckets)
     {
-        for (int x = 0; x < frameWidth; ++x)
-        {
-            const Ray ray = scene.camera->GetScreenRay(x, y);
-            vfb[y][x] = Raytrace(ray);
-        }
-
-        if (scene.settings.wantProgressiveDisplay)
-        {
-            const Uint32 ticks = SDL_GetTicks();
-            if (ticks - lastTicks > scene.settings.progressiveDisplayDelay)
+        for (int y = r.y0; y < r.y1; ++y)
+            for (int x = r.x0; x < r.x1; ++x)
             {
-                DisplayVFB(vfb, scene.settings.useSRGB);
-                lastTicks = ticks;
+                const Ray ray = scene.camera->GetScreenRay(x, y);
+                vfb[y][x] = Raytrace(ray);
             }
-        }
+
+        if (!DisplayVFBRect(r, vfb, scene.settings.useSRGB))
+            return false;
     }
 
-    DisplayVFB(vfb, scene.settings.useSRGB);
+    return true;
 }
 
-void aaRender()
+void AARender()
 {
     SetWindowCaption("Quad Damage: AA Pass");
 
@@ -128,57 +119,52 @@ void aaRender()
     };
     const int kernelSize = COUNT_OF(kernel);
 
-    const int frameWidth = GetFrameWidth();
-    const int frameHeight = GetFrameHeight();
-    for (int y = 0; y < frameHeight; ++y)
-        for (int x = 0; x < frameWidth; ++x)
-            needChange[x][y] = !scene.settings.wantAdaptiveAA || isTooDifferent(x, y);
-
-    Uint32 lastTicks = SDL_GetTicks();
-    for (int y = 0; y < frameHeight; ++y)
+    std::vector<Rect> buckets = GetBucketList();
+    for (Rect& r : buckets)
     {
-        for (int x = 0; x < frameWidth; ++x)
-        {
-            if (!needChange[x][y])
-                continue;
+        for (int y = r.y0; y < r.y1; ++y)
+            for (int x = r.x0; x < r.x1; ++x)
+                needChange[x][y] = !scene.settings.wantAdaptiveAA || IsTooDifferent(x, y);
 
-            if (scene.settings.showAA)
+        for (int y = r.y0; y < r.y1; ++y)
+            for (int x = r.x0; x < r.x1; ++x)
             {
-                vfb[y][x] = scene.settings.aaDebugColor;
-            }
-            else
-            {
-                Color result = vfb[y][x];
-                for (int i = 1; i < kernelSize; ++i)
+                if (!needChange[x][y])
+                    continue;
+
+                if (scene.settings.showAA)
+                    vfb[y][x] = scene.settings.aaDebugColor;
+                else
                 {
-                    Ray ray = scene.camera->GetScreenRay(x + kernel[i][0], y + kernel[i][1]);
-                    result += Raytrace(ray);
+                    Color result = vfb[y][x];
+                    for (int i = 1; i < kernelSize; ++i)
+                    {
+                        const Ray ray = scene.camera->GetScreenRay(x + kernel[i][0], y + kernel[i][1]);
+                        result += Raytrace(ray);
+                    }
+
+                    vfb[y][x] = result /  double(kernelSize);
                 }
-
-                vfb[y][x] = result / double(kernelSize);
             }
-        }
 
-        if (scene.settings.wantProgressiveDisplay)
-        {
-            const Uint32 ticks = SDL_GetTicks();
-            if (ticks - lastTicks > scene.settings.progressiveDisplayDelay)
-            {
-                DisplayVFB(vfb, scene.settings.useSRGB);
-                lastTicks = ticks;
-            }
-        }
+        if (!DisplayVFBRect(r, vfb, scene.settings.useSRGB))
+            return;
     }
-
-    DisplayVFB(vfb, scene.settings.useSRGB);
 }
 
-void render()
+void Render()
 {
     scene.BeginFrame();
 
-    simpleRender();
-    aaRender();
+    if (SimpleRender())
+        AARender();
+}
+
+int RenderSceneThreaded(void*)
+{
+    Render();
+    rendering = false;
+    return 0;
 }
 
 void DebugRaytrace(int x, int y)
@@ -209,7 +195,7 @@ int main (int argc, char* argv[])
 //        g_Camera.FrameBegin();
 
         const Uint32 startTicks = SDL_GetTicks();
-        render();
+        RenderScene_Threaded();
         const Uint32 elapsedMs = SDL_GetTicks() - startTicks;
         printf("Render took %.2lfs\n", elapsedMs / 1000.);
         SetWindowCaption("Quad Damage: rendered in %.2fs\n", elapsedMs / 1000.f);
