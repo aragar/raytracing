@@ -253,22 +253,49 @@ void Fresnel::FillProperties(ParsedBlock& pb)
     pb.GetDoubleProp("ior", &m_InOutRatio, 1e-6, 10.);
 }
 
-void BumpTexture::FillProperties(ParsedBlock& pb)
+void BumpmapTexture::FillProperties(ParsedBlock& pb)
 {
     m_BitmapHelper.FillProperties(pb);
     pb.GetDoubleProp("strength", &m_Strength);
 }
 
-void BumpTexture::BeginRender()
+void BumpmapTexture::BeginRender()
 {
     m_BitmapHelper.DifferentiateBitmap();
 }
 
-void BumpTexture::ModifyNormal(IntersectionInfo& info) const
+void BumpmapTexture::ModifyNormal(IntersectionInfo& info) const
 {
     const Color bump = m_BitmapHelper.GetColor(info.u, info.v);
     const float dx = bump.r;
     const float dy = bump.g;
     info.normal += (info.dNdx*dx + info.dNdy*dy) * m_Strength;
     info.normal.Normalize();
+}
+
+void BumpsTexture::ModifyNormal(IntersectionInfo& info) const
+{
+    if (m_Strength <= 0.f)
+        return;
+
+    float freqX[] = {0.5f, 1.21f, 1.9f};
+    float freqZ[] = {0.4f, 1.13f, 1.81f};
+    float fm = 0.2f;
+    float intensity[] = {0.1f, 0.08f, 0.05f};
+    double dx = 0;
+    double dy = 0;
+
+    for (unsigned i = 0; i < 3; ++i)
+    {
+        dx += sin(fm * freqX[i] * info.u) * intensity[i] * m_Strength;
+        dy += sin(fm * freqZ[i] * info.v) * intensity[i] * m_Strength;
+    }
+
+    info.normal += dx*info.dNdx + dy*info.dNdy;
+    info.normal.Normalize();
+}
+
+void BumpsTexture::FillProperties(ParsedBlock& pb)
+{
+    pb.GetFloatProp("strength", &m_Strength);
 }

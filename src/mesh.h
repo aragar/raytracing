@@ -1,6 +1,7 @@
 #ifndef RAYTRACING_MESH_H
 #define RAYTRACING_MESH_H
 
+#include "bbox.h"
 #include "geometry.h"
 #include "vector.h"
 
@@ -20,7 +21,6 @@ class Mesh : public Geometry
 {
 public:
     Mesh(bool isFaceted = true, bool backCulling = true);
-    virtual ~Mesh() override;
 
     void SetFaceted(bool faceted) { m_Faceted = faceted; }
     void SetBackCulling(bool backCulling) { m_BackCulling = backCulling; }
@@ -37,8 +37,7 @@ private:
     std::vector<Vector> m_Normals;
     std::vector<Vector> m_UVs;
     std::vector<MeshTriangle> m_Triangles;
-
-    Geometry* m_BoundingGeometry = nullptr;
+    BBox m_BBox;
 
     bool m_Faceted = true;
     bool m_BackCulling = true;

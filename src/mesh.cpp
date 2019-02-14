@@ -8,18 +8,9 @@ Mesh::Mesh(bool isFaceted, bool backCulling)
 {
 }
 
-Mesh::~Mesh()
-{
-    if (m_BoundingGeometry)
-    {
-        delete m_BoundingGeometry;
-        m_BoundingGeometry = nullptr;
-    }
-}
-
 bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
-    if (m_BoundingGeometry && m_BoundingGeometry->Intersect(ray, outInfo) == false)
+    if (m_BBox.TestIntersect(ray))
         return false;
 
     bool found = false;
@@ -44,17 +35,9 @@ bool Mesh::IsInside(const Vector& point) const
 
 void Mesh::ComputeBoundingGeometry()
 {
-    Vector origin = std::accumulate(m_Vertices.begin(), m_Vertices.end(), Vector{0, 0, 0});
-    origin /= m_Vertices.size();
-
-    double maxRadius = 0.;
-    for (const Vector& vertex : m_Vertices)
-    {
-        const double distSqr = (origin - vertex).LengthSqr();
-        maxRadius = Max(maxRadius, distSqr);
-    }
-
-    m_BoundingGeometry = new Sphere(origin, sqrt(maxRadius));
+    m_BBox.MakeEmpty();
+    for (const Vector& v : m_Vertices)
+        m_BBox.Add(v);
 }
 
 double Det(const Vector& a, const Vector& b, const Vector& c)
@@ -242,5 +225,46 @@ bool Mesh::LoadFromOBJ(const char* filename)
     GenerateTrianglesData();
 
     printf("Mesh loaded, %d triangles\n", int(m_Triangles.size()));
+    return true;
+}
+
+bool IntersectTriangleFast(const Ray& ray, const Vector& A, const Vector& B, const Vector& C, double& dist)
+{
+    Vector AB = B - A;
+    Vector AC = C - A;
+    Vector D = -ray.dir;
+    Vector H = ray.start - A;
+
+    /* 2. Solve the equation:
+     *
+     * A + lambda2 * AB + lambda3 * AC = ray.start + gamma * ray.dir
+     *
+     * which can be rearranged as:
+     * lambda2 * AB + lambda3 * AC + gamma * D = ray.start - A
+     *
+     * Which is a linear system of three rows and three unknowns, which we solve using Carmer's rule
+     */
+
+    // find the determinant of the left part of the equation
+    Vector ABcrossAC = AB^AC;
+    double Dcr = ABcrossAC * D;
+
+    // are the ray and the triangle parallel?
+    if (fabs(Dcr) < 1e-12)
+        return false;
+
+    double lambda2 = ( ( H ^ AC) * D) / Dcr;
+    double lambda3 = ( (AB ^  H) * D) / Dcr;
+    double gamma   = ( ABcrossAC * H) / Dcr;
+
+    // is intersection behind us, or too far?
+    if (gamma < 0 || gamma > dist)
+        return false;
+
+    // is the intersection outside the triangle?
+    if (lambda2 < 0 || lambda2 > 1 || lambda3 < 0 || lambda3 > 1 || lambda2 + lambda3 > 1)
+        return false;
+
+    dist = gamma;
     return true;
 }

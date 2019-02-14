@@ -20,6 +20,18 @@ public:
     virtual ElementType GetElementType() const override { return ElementType::SHADER; }
 };
 
+class ConstColorShader : public Shader
+{
+public:
+    ConstColorShader (Color color = Colors::GRAY);
+
+    virtual Color Shade(const Ray& ray, const IntersectionInfo& info) const override { return m_Color; }
+    virtual void FillProperties(ParsedBlock& pb) override;
+
+private:
+    Color m_Color;
+};
+
 class Lambert : public Shader
 {
 public:

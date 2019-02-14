@@ -111,7 +111,8 @@ private:
     BitmapHelper m_BitmapHelper;
 };
 
-class BumpTexture : public Texture
+// ex BumpTexture
+class BumpmapTexture : public Texture
 {
 public:
     virtual Color Sample(const IntersectionInfo& info) const override { return Colors::BLACK; }
@@ -135,6 +136,17 @@ public:
 
 private:
     double m_InOutRatio = 1.;
+};
+
+class BumpsTexture : public Texture
+{
+    virtual Color Sample(const IntersectionInfo& info) const override { return Colors::BLACK; }
+    virtual void ModifyNormal(IntersectionInfo& info) const override;
+
+    virtual void FillProperties(ParsedBlock& pb) override;
+
+private:
+    float m_Strength = 0.;
 };
 
 #endif //RAYTRACING_TEXTURE_H

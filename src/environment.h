@@ -41,7 +41,7 @@ public:
     virtual void FillProperties(ParsedBlock& pb) override;
 
 private:
-    Bitmap* m_Maps[6];
+    Bitmap* m_Maps[6] = {nullptr};
     bool m_UseBilinearFiltering = false;
 
     Color GetSide(const Bitmap& bmp, double x, double y) const;

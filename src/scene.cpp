@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "environment.h"
 #include "geometry.h"
+#include "heightfield.h"
 #include "light.h"
 #include "mesh.h"
 #include "random_generator.h"
@@ -870,6 +871,7 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "CsgMinus")) return new CsgMinus;
     if (!strcmp(className, "Node")) return new Node;
     if (!strcmp(className, "Mesh")) return new Mesh;
+    if (!strcmp(className, "Heightfield")) return new Heightfield;
 
     // shaders
     if (!strcmp(className, "Lambert")) return new Lambert;
@@ -879,6 +881,7 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "Reflection")) return new Reflection;
     if (!strcmp(className, "Refraction")) return new Refraction;
     if (!strcmp(className, "Layered")) return new Layered;
+    if (!strcmp(className, "Const")) return new ConstColorShader;
 
     // textures
     if (!strcmp(className, "ConstantColorTexture")) return new ConstantColorTexture;
@@ -887,7 +890,9 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "ProceduralTexture")) return new ProceduralTexture;
     if (!strcmp(className, "BitmapTexture")) return new BitmapTexture;
     if (!strcmp(className, "Fresnel")) return new Fresnel;
-    if (!strcmp(className, "BumpTexture")) return new BumpTexture;
+    if (!strcmp(className, "BumpmapTexture")) return new BumpmapTexture;
+    if (!strcmp(className, "ConstColorShader")) return new ConstantColorTexture;
+    if (!strcmp(className, "Bumps")) return new BumpsTexture;
 
     // environment
     if (!strcmp(className, "CubemapEnvironment")) return new CubemapEnvironment;

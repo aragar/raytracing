@@ -72,7 +72,7 @@ BitmapTexture die_faces {
 	file	"texture/zar-texture.bmp"
 }
 
-BumpTexture bump_tex {
+BumpmapTexture bump_tex {
 	file	"texture/zar-bump.bmp"
 	strength 20
 	useBilinearFilter false

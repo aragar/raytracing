@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 project(raytracing)
 
 # define C++
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wl,--enable-stdcall-fixup")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}   -O0")
+set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}   -O2")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
 # end C++
 
@@ -51,13 +51,13 @@ set(SOURCE_FILES
 		src/shadinghelper.h 		src/shadinghelper.cpp
         src/environment.h 			src/environment.cpp
         src/colors.h 				src/colors.cpp
-        src/meshdata.h 				src/meshdata.cpp
-        src/mesh.h 					src/mesh.cpp
+		src/mesh.h 					src/mesh.cpp
 		src/transform.h 			src/transform.cpp
 		src/scene.h 				src/scene.cpp
 		src/random_generator.h 		src/random_generator.cpp
 		src/light.h 				src/light.cpp
-		)
+		src/bbox.h 					src/bbox.cpp
+		src/heightfield.h 			src/heightfield.cpp)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

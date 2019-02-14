@@ -17,12 +17,13 @@ inline double Sqr(const double a) { return a*a; }
 inline double ToRadians(const double angle) { return angle / 180. * PI; }
 inline double ToDegrees(const double angle) { return angle / PI * 180.; }
 
-inline double NearestInt(const double x) { return (int) floor(x + 0.5); }
+inline int NearestInt(const double x) { return (int) floor(x + 0.5); }
 
 inline double Min(const double a, const double b) { return a < b ? a : b; }
 inline double Max(const double a, const double b) { return a > b ? a : b; }
 inline double Max(unsigned a, unsigned b) { return a > b ? a : b; }
 inline double Clamp(const double x, const double a, const double b) { return Min(Max(x, a), b); }
+inline bool IsBetween(const double x, const double lhs, const double rhs, const double eps = 1e-6) { return (lhs - eps <= x && x <= rhs + eps); }
 
 inline double Random() { return rand() / (double) RAND_MAX; }
 inline double Random(double from, double to) { return (Random()*Max(from, to) + Min(from, to)); }

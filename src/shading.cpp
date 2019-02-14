@@ -338,3 +338,12 @@ void Layered::FillProperties(ParsedBlock& pb)
 }
 
 
+ConstColorShader::ConstColorShader(Color color)
+: m_Color(color)
+{
+}
+
+void ConstColorShader::FillProperties(ParsedBlock& pb)
+{
+    pb.GetColorProp("color", &m_Color);
+}

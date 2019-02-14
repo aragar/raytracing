@@ -34,7 +34,7 @@ public:
 class Geometry : public Intersectable, public SceneElement
 {
 public:
-    virtual ~Geometry() {}
+    virtual ~Geometry() override {}
 
     virtual bool IsInside(const Vector& point) const =0;
     virtual ElementType GetElementType() const override { return ElementType::GEOMETRY; }
