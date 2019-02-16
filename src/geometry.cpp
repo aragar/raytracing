@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdio>
+
 #include "geometry.h"
 
 bool Plane::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
@@ -304,7 +305,7 @@ bool RegularPolygon::IsInside(const Vector& point) const
 RegularPolygon::RegularPolygon(const Vector& center, double radius, unsigned int sides)
 : m_Center(center)
 , m_Radius(radius)
-, m_Sides(Max(sides, 3))
+, m_Sides(std::max(sides, 3u))
 {
 }
 

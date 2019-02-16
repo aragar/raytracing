@@ -95,7 +95,7 @@ double BlinnPhong::GetSpecularCoeff(const Ray& ray, const IntersectionInfo& info
     Vector lightDir = Normalize(light.pos - info.ip);
     Vector halfwayDir = Normalize(lightDir - ray.dir);
     double dot = Dot(info.normal, halfwayDir);
-    double result = pow(Max(dot, 0.), m_SpecularExponent);
+    double result = pow(std::max(dot, 0.), m_SpecularExponent);
     return result;
 }
 
@@ -113,7 +113,7 @@ Color OrenNayar::Shade(const Ray& ray, const IntersectionInfo& info) const
         const double LdotV = Dot(lightDir, -ray.dir);
         const double LdotN = Dot(lightDir, info.normal);
         const double s = LdotV - LdotN*VdotN;
-        const double t = (s <= 0. ? 1. : Max(LdotN, VdotN));
+        const double t = (s <= 0. ? 1. : std::max(LdotN, VdotN));
         const double a = 1 - 0.5 * sigma2 / (sigma2 + 0.33);
         const double b = 0.45 * sigma2 / (sigma2 + 0.09);
 

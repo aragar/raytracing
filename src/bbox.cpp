@@ -12,13 +12,13 @@ void BBox::MakeEmpty()
 
 void BBox::Add(const Vector& point)
 {
-    m_Min.x = Min(m_Min.x, point.x);
-    m_Min.y = Min(m_Min.y, point.y);
-    m_Min.z = Min(m_Min.z, point.z);
+    m_Min.x = std::min(m_Min.x, point.x);
+    m_Min.y = std::min(m_Min.y, point.y);
+    m_Min.z = std::min(m_Min.z, point.z);
 
-    m_Max.x = Max(m_Max.x, point.x);
-    m_Max.y = Max(m_Max.y, point.y);
-    m_Max.z = Max(m_Max.z, point.z);
+    m_Max.x = std::max(m_Max.x, point.x);
+    m_Max.y = std::max(m_Max.y, point.y);
+    m_Max.z = std::max(m_Max.z, point.z);
 }
 
 bool BBox::IsInside(const Vector& point) const
@@ -128,7 +128,7 @@ double BBox::ClosestIntersection(const Ray& ray) const
             {
                 const double y = ray.start[v] + ray.dir[v]*dist;
                 if (IsBetween(y, m_Min[v], m_Max[v], 0))
-                    minDist = Min(minDist, dist);
+                    minDist = std::min(minDist, dist);
             }
         }
     }
