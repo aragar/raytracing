@@ -105,6 +105,7 @@ bool Mesh::Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionI
 void Mesh::FillProperties(ParsedBlock& pb)
 {
     pb.GetBoolProp("faceted", &m_Faceted);
+    pb.GetBoolProp("backCulling", &m_BackCulling);
 
     pb.RequiredProp("file");
 
