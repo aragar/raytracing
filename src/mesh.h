@@ -4,6 +4,7 @@
 #include "bbox.h"
 #include "geometry.h"
 #include "vector.h"
+#include "KDTree.h"
 
 #include <array>
 #include <vector>
@@ -21,10 +22,10 @@ class Mesh : public Geometry
 {
 public:
     Mesh(bool isFaceted = true, bool backCulling = true);
+    virtual ~Mesh() override;
 
     void SetFaceted(bool faceted) { m_Faceted = faceted; }
     void SetBackCulling(bool backCulling) { m_BackCulling = backCulling; }
-    void ComputeBoundingGeometry();
 
     virtual bool Intersect(const Ray& ray, IntersectionInfo& outInfo) const override;
     virtual bool IsInside(const Vector& point) const override;
@@ -39,13 +40,23 @@ private:
     std::vector<MeshTriangle> m_Triangles;
     BBox m_BBox;
 
+    bool m_UseKDTree = true;
+    KDTreeNode* m_KDRoot = nullptr;
+
     bool m_Faceted = true;
     bool m_BackCulling = true;
 
     bool Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionInfo& outInfo) const;
+    bool Intersect(KDTreeNode* node, BBox bbox, const Ray& ray, IntersectionInfo& outInfo) const;
 
     bool LoadFromOBJ(const char* filename);
     void GenerateTrianglesData();
+
+    void ComputeBoundingGeometry();
+
+    void ComputeKDRoot();
+    void BuildKD(KDTreeNode* node, BBox bbox, const std::vector<int>& triangleList, unsigned int depth) const;
+    void BuildKDNodeChildren(KDTreeNode* node, const BBox& bbox, const std::vector<int>& triangleList, unsigned int depth) const;
 };
 
 

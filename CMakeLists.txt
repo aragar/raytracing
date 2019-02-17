@@ -57,7 +57,8 @@ set(SOURCE_FILES
 		src/random_generator.h 		src/random_generator.cpp
 		src/light.h 				src/light.cpp
 		src/bbox.h 					src/bbox.cpp
-		src/heightfield.h 			src/heightfield.cpp)
+		src/heightfield.h 			src/heightfield.cpp
+		src/KDTree.h 				src/KDTree.cpp)
 	
 add_executable(raytracing ${SOURCE_FILES})
 

@@ -10,4 +10,7 @@ const unsigned RESY = 480;
 const double PI = 3.141592653589793238;
 const double INF = 1e99;
 
+const unsigned MAX_TREE_DEPTH = 64;
+const unsigned TRIANGLES_PER_LEAF = 20;
+
 #endif //RAYTRACING_CONSTANTS_H

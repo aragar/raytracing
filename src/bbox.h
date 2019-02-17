@@ -20,7 +20,12 @@ struct Ray;
 class BBox
 {
 public:
+    Vector GetMin() const { return m_Min; }
+    double GetMin(Axis axis) const { return m_Min.v[static_cast<int>(axis)]; }
     void SetMin(const Vector& min) { m_Min = min; }
+
+    Vector GetMax() const { return m_Max; }
+    double GetMax(Axis axis) const { return m_Max.v[static_cast<int>(axis)]; }
     void SetMax(const Vector& max) { m_Max = max; }
 
     void MakeEmpty();
