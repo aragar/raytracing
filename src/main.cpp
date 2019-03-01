@@ -174,12 +174,14 @@ void DebugRaytrace(int x, int y)
     Raytrace(ray);
 }
 
+const char* DEFAULT_SCENE = "../data/heightfield.qdmg";
 // don't remove main arguments, it's required by SDL
 int main (int argc, char* argv[])
 {
 //    test_random();
     InitRandom(42);
-    if (!scene.ParseScene("../data/heightfield.qdmg"))
+    const char* sceneFile = (argc == 2 ? argv[1] : DEFAULT_SCENE);
+    if (!scene.ParseScene(sceneFile))
     {
         printf("Could not parse the scene!\n");
         return -1;
