@@ -878,8 +878,8 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "Phong")) return new Phong;
     if (!strcmp(className, "BlinnPhong")) return new BlinnPhong;
     if (!strcmp(className, "OrenNayar")) return new OrenNayar;
-    if (!strcmp(className, "Reflection")) return new Reflection;
-    if (!strcmp(className, "Refraction")) return new Refraction;
+    if (!strcmp(className, "Refl")) return new Reflection;
+    if (!strcmp(className, "Refr")) return new Refraction;
     if (!strcmp(className, "Layered")) return new Layered;
     if (!strcmp(className, "Const")) return new ConstColorShader;
 
@@ -890,7 +890,7 @@ SceneElement* DefaultSceneParser::NewSceneElement(const char* className)
     if (!strcmp(className, "ProceduralTexture")) return new ProceduralTexture;
     if (!strcmp(className, "BitmapTexture")) return new BitmapTexture;
     if (!strcmp(className, "Fresnel")) return new Fresnel;
-    if (!strcmp(className, "BumpmapTexture")) return new BumpmapTexture;
+    if (!strcmp(className, "BumpTexture")) return new BumpmapTexture;
     if (!strcmp(className, "ConstColorShader")) return new ConstantColorTexture;
     if (!strcmp(className, "Bumps")) return new BumpsTexture;
 

@@ -42,7 +42,7 @@ Plane::Plane(double height, double limit)
 
 void Plane::FillProperties(ParsedBlock& pb)
 {
-    pb.GetDoubleProp("height", &m_Height);
+    pb.GetDoubleProp("y", &m_Height);
     pb.GetDoubleProp("limit", &m_Limit);
 }
 
