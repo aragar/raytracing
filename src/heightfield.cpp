@@ -87,7 +87,7 @@ void Heightfield::ComputeNextCoordinates(Vector& p, const Ray& ray, int& outX, i
         return;
 
     int k = 0;
-    while (k < m_MaxK && p.y + ray.dir.y * (1 << k) > GetHeighest(outX, outZ, k))
+    while (k < m_MaxK && std::min(p.y, p.y + ray.dir.y * (1 << k)) > GetHeighest(outX, outZ, k))
         ++k;
 
     --k;
