@@ -5,18 +5,17 @@
 
 #include <algorithm>
 #include <cmath>
+#include <SDL.h>
 
 Heightfield::~Heightfield()
 {
-    if (m_Heights)
-        delete[] m_Heights;
-
-    if (m_MaxHeights)
-        delete[] m_MaxHeights;
-
-    if (m_Normals)
-        delete[] m_Normals;
+    SafeDeleteArray(m_Heights);
+    SafeDeleteArray(m_MaxHeights);
+    SafeDeleteArray(m_Normals);
+    SafeDeleteArray(m_HighMap);
 }
+
+
 
 bool Heightfield::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
@@ -29,9 +28,9 @@ bool Heightfield::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     Vector p = ray.start + ray.dir * (dist + 1e-6); // step firmly inside the bbox
     while (m_BBox.IsInside(p))
     {
-        const unsigned x0 = (unsigned) floor(p.x);
-        const unsigned z0 = (unsigned) floor(p.z);
-        if (x0 < 0 || x0 >= m_Width || z0 < 0 || z0 >= m_Height)
+        int x0, z0;
+        ComputeNextCoordinates(p, ray, x0, z0);
+        if (x0 < 0 || x0 >= (int)m_Width || z0 < 0 || z0 >= (int)m_Height)
             break; // if outside the [0..W)x[0..H) rect, get out
 
         // calculate how much we need to go along ray.dir until we hit the next X voxel boundary:
@@ -77,6 +76,29 @@ bool Heightfield::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     return false;
 }
 
+void Heightfield::ComputeNextCoordinates(Vector& p, const Ray& ray, int& outX, int& outZ) const
+{
+    outX = (int) floor(p.x);
+    outZ = (int) floor(p.z);
+    if (outX < 0 || outX >= (int)m_Width || outZ < 0 || outZ >= (int)m_Height)
+        return;
+
+    if (!m_UseOptimization)
+        return;
+
+    int k = 0;
+    while (k < m_MaxK && p.y + ray.dir.y * (1 << k) > GetHeighest(outX, outZ, k))
+        ++k;
+
+    --k;
+    if (k >= 0)
+    {
+        p += ray.dir * (1 << k);
+        outX = (int) floor(p.x);
+        outZ = (int) floor(p.z);
+    }
+}
+
 void Heightfield::FillProperties(ParsedBlock& pb)
 {
     Bitmap bmp;
@@ -98,6 +120,27 @@ void Heightfield::FillProperties(ParsedBlock& pb)
 
     PopulateMaxHeights();
     PopulateNormals();
+
+    pb.GetBoolProp("useOptimization", &m_UseOptimization);
+}
+
+void Heightfield::PopulateMaxHeights()
+{
+    m_MaxHeights = new float[m_Width * m_Height];
+    for (unsigned y = 0; y < m_Height; ++y)
+        for (unsigned x = 0; x < m_Width; ++x)
+        {
+            float& maxHeight = m_MaxHeights[y * m_Width + x];
+            maxHeight = m_Heights[y * m_Width + x];
+            if (x < m_Width - 1)
+                maxHeight = std::max(maxHeight, m_Heights[y * m_Width + x + 1]);
+            if (y < m_Height - 1)
+            {
+                maxHeight = std::max(maxHeight, m_Heights[(y + 1) * m_Width + x]);
+                if (x < m_Width - 1)
+                    maxHeight = std::max(maxHeight, m_Heights[(y + 1) * m_Width + x + 1]);
+            }
+        }
 }
 
 void Heightfield::PopulateNormals()
@@ -122,25 +165,6 @@ void Heightfield::PopulateNormals()
 
     for (unsigned x = 0; x < m_Width; ++x)
         m_Normals[(m_Height - 1)*m_Width + x] = m_Normals[(m_Height - 2)*m_Width + x];
-}
-
-void Heightfield::PopulateMaxHeights()
-{
-    m_MaxHeights = new float[m_Width * m_Height];
-    for (unsigned y = 0; y < m_Height; ++y)
-        for (unsigned x = 0; x < m_Width; ++x)
-        {
-            float& maxHeight = m_MaxHeights[y * m_Width + x];
-            maxHeight = m_Heights[y * m_Width + x];
-            if (x < m_Width - 1)
-                maxHeight = std::max(maxHeight, m_Heights[y * m_Width + x + 1]);
-            if (y < m_Height - 1)
-            {
-                maxHeight = std::max(maxHeight, m_Heights[(y + 1) * m_Width + x]);
-                if (x < m_Width - 1)
-                    maxHeight = std::max(maxHeight, m_Heights[(y + 1) * m_Width + x + 1]);
-            }
-        }
 }
 
 void Heightfield::BlurImage(Bitmap& bmp, double blur, float& outMinY, float& outMaxY) const
@@ -189,11 +213,18 @@ void Heightfield::BlurImage(Bitmap& bmp, double blur, float& outMinY, float& out
     }
 }
 
-float Heightfield::GetHeight(unsigned int x, unsigned int y) const
+float Heightfield::GetHeight(int x, int y) const
 {
-    x = std::min(m_Width - 1, x);
-    y = std::min(m_Height - 1, y);
+    x = Clamp(x, 0, m_Width - 1);
+    y = Clamp(y, 0, m_Height - 1);
     return m_Heights[y*m_Width + x];
+}
+
+float Heightfield::GetHeighest(int x, int y, int k) const
+{
+    x = Clamp(x, 0, m_Width - 1);
+    y = Clamp(y, 0, m_Height - 1);
+    return m_HighMap[y*m_Width + x].height[k];
 }
 
 Vector Heightfield::GetNormal(float x, float y) const
@@ -211,4 +242,49 @@ Vector Heightfield::GetNormal(float x, float y) const
              + m_Normals[y1*m_Width + x1]*((    p)*(    q));
 
     return v;
+}
+
+void Heightfield::BeginRender()
+{
+    SceneElement::BeginRender();
+
+    if (m_UseOptimization)
+    {
+        const Uint32 startTicks = SDL_GetTicks();
+        BuildHighMap();
+        const Uint32 elapsedMs = SDL_GetTicks() - startTicks;
+        printf("Built %dx%d heightmap acceleration struct in %.2lfs.\n", m_Width, m_Height, elapsedMs / 1000.0);
+    }
+}
+
+void Heightfield::BuildHighMap()
+{
+    m_MaxK = (int)ceil(log(std::max(m_Width, m_Height)) / log(2)); // log2
+    m_HighMap = new OptimizationHighMap[m_Width * m_Height];
+    for (unsigned y = 0; y < m_Height; ++y)
+        for (unsigned x = 0; x < m_Width; ++x)
+        {
+            float& thisHeight = m_HighMap[y*m_Width + x].height[0];
+
+            thisHeight = GetHeight(x, y);
+            for (int dy = -1; dy <= 1; ++dy)
+                for (int dx = -1; dx <= 1; ++dx)
+                    thisHeight = std::max(thisHeight, GetHeight(x + dx, y + dy));
+        }
+
+    // r = 1 -> square 3x3
+    // r = 2 -> square 5x5
+    // r = 4 -> square 9x9
+    // r = 2^k -> square (2^(k + 1) + 1 x 2^(k + 1) + 1)
+    // r = 2^k -> offset -> 2^(k - 1)
+    for (unsigned k = 1; k < (unsigned)m_MaxK; ++k)
+        for (unsigned y = 0; y < m_Height; ++y)
+            for (unsigned x = 0; x < m_Width; ++x)
+            {
+                int offset = (1 << (k - 1));
+                m_HighMap[y*m_Width + x].height[k] = Max(GetHeighest(x - offset, y - offset, k - 1)
+                                                       , GetHeighest(x + offset, y - offset, k - 1)
+                                                       , GetHeighest(x - offset, y + offset, k - 1)
+                                                       , GetHeighest(x + offset, y + offset, k - 1));
+            }
 }

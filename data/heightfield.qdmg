@@ -3,10 +3,10 @@
 //
 
 GlobalSettings {
-	frameWidth              800
-	frameHeight             600
+	frameWidth              992
+	frameHeight             744
 	ambientLight            (0.25, 0.25, 0.25)
-	wantAA                  true
+	wantAA                  false
 	wantAdaptiveAA          true
 	aaThreshold             0.1
 	wantProgressiveDisplay  true
@@ -21,7 +21,7 @@ Light {
     intensity           50000000
 }
 
-/*
+
 // Island - sunset view
 Camera camera {
 	position      (100, 80, 600)
@@ -31,7 +31,7 @@ Camera camera {
 	roll            0
 	fov           90
 }
-*/
+
 /*
 // Island - front view
 Camera camera {
@@ -54,7 +54,7 @@ Camera camera {
 	fov      110
 }
 */
-
+/*
 // Bay view
 Camera camera {
 	position (200.1, 65, 550)
@@ -64,7 +64,18 @@ Camera camera {
 	roll     0
 	fov      110
 }
-
+*/
+/*
+// Island - custom
+Camera camera {
+	position (180.1, 300, 210)
+	aspectRatio   1.33333
+	yaw      -60
+	pitch    -45
+	roll     0
+	fov      110
+}
+*/
 
 CubemapEnvironment {
 	folder "env/ocean"
@@ -130,6 +141,7 @@ Lambert island_shader {
 Heightfield island {
 	file "texture/heightfield.bmp"
 	blur 2.5
+	useOptimization true
 }
 
 Node island {

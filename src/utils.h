@@ -10,6 +10,8 @@
 #include "vector.h"
 
 #define  COUNT_OF(arr) int((sizeof(arr)) / sizeof(arr[0]))
+#define SafeDelete(ptr) do { if ((ptr) != nullptr) delete (ptr); } while (0);
+#define SafeDeleteArray(ptr) do { if ((ptr) != nullptr) delete[] (ptr); } while (0);
 
 inline int SignOf(const double x) { return x > 1e-6 ? +1 : (x < -1e-6 ? -1 : 0); }
 inline double Sqr(const double a) { return a*a; }
@@ -19,7 +21,9 @@ inline double ToDegrees(const double angle) { return angle / PI * 180.; }
 
 inline int NearestInt(const double x) { return (int) floor(x + 0.5); }
 
+inline float Max(const float a, const float b, const float c, const float d) { return std::max(std::max(a, b), std::max(c, d)); }
 inline double Clamp(const double x, const double a, const double b) { return std::min(std::max(x, a), b); }
+inline int Clamp(const int x, const int a, const int b) { return std::min(std::max(x, a), b); }
 inline bool IsBetween(const double x, const double lhs, const double rhs, const double eps = 1e-6) { return (lhs - eps <= x && x <= rhs + eps); }
 
 inline double Random() { return rand() / (double) RAND_MAX; }
