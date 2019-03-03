@@ -240,9 +240,6 @@ struct GlobalSettings : public SceneElement
     bool showAA = false;                 //!< will color the Anti-Aliased pixels differently
     Color aaDebugColor = Colors::RED;    //!< the color to be used for showAA;
 
-    bool wantProgressiveDisplay = true;  //!< display progressively the result
-    unsigned progressiveDisplayDelay = 100;   //!< the delay the display will be refreshed
-
     bool useSRGB = false;                //!< whether to use sRGB or RGB
 
     virtual void FillProperties(ParsedBlock& pb) override;

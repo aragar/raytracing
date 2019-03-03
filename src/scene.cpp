@@ -851,9 +851,6 @@ void GlobalSettings::FillProperties(ParsedBlock& pb)
     pb.GetBoolProp("showAA", &showAA);
     pb.GetColorProp("aaDebugColor", &aaDebugColor);
 
-    pb.GetBoolProp("wantProgressiveDisplay", &wantProgressiveDisplay);
-    pb.GetUnsignedProp("progressiveDisplayDelay", &progressiveDisplayDelay);
-
     pb.GetBoolProp("useSRGB", &useSRGB);
 }
 

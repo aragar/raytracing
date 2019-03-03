@@ -20,6 +20,8 @@ struct KDTreeNode
 
     void InitLeaf(const std::vector<int>& triangles);
     void InitTreeNode(Axis axis, double splitPosition);
+
+    bool IsLeaf() const { return axis == Axis::None; }
 };
 
 

@@ -44,7 +44,7 @@ bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 bool Mesh::Intersect(KDTreeNode* node, BBox bbox, const Ray& ray, IntersectionInfo& outInfo) const
 {
     bool result = false;
-    if (node->axis == Axis::None)
+    if (node->IsLeaf())
     {
         bool found = false;
         for (int triangleIdx : *node->triangles)
