@@ -6,7 +6,7 @@ GlobalSettings {
 	frameWidth              992
 	frameHeight             744
 	ambientLight            (0.25, 0.25, 0.25)
-	wantAA                  false
+	wantAA                  true
 	wantAdaptiveAA          true
 	aaThreshold             0.1
 	wantProgressiveDisplay  true

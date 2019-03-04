@@ -4,17 +4,16 @@
 //
 
 GlobalSettings {
-	frameWidth              640
-	frameHeight             480
+	frameWidth              1200
+	frameHeight             900
 	ambientLight            (0.28, 0.28, 0.28)
-	wantAA                  true
-	wantAdaptiveAA          true
+	wantAA                  false
+	wantAdaptiveAA          false
 	aaThreshold             0.1
-	wantProgressiveDisplay  true
-    progressiveDisplayDelay 100
     useSRGB                 false
     showAA                  false
     aaDebugColor            (1, 0, 0)
+    maxTraceDepth           10
 }
 
 Light {
@@ -23,7 +22,7 @@ Light {
 }
 
 Camera camera {
-	position      (30, 100, -110)
+	position      (30, 100, -80)
 	aspectRatio   1.33333
 	yaw          19
 	pitch       -25
@@ -55,7 +54,7 @@ Lambert lambert {
 	texture  tex
 }
 
-Reflection refl {
+Refl refl {
 }
 
 Layered layered {
@@ -76,8 +75,8 @@ CheckerTexture checker {
 }
 
 Lambert teapot_tex {
-	color    (1, 1, 1)
-	texture  checker
+	color    (0.5, 0.5, 0.5)
+	//texture  checker
 }
 
 /*
@@ -86,15 +85,55 @@ Lambert teapot_tex {
  * 2) the "hires" teapot has ~10,000 triangles
  * 3) change the "useKDTree" flag to test the speed with or without the K-d tree
 */
-Mesh teapot {
-	file "geometries/teapot_lowres.obj"
+//Mesh teapot {
+//// 	file "geometries/teapot_lowres.obj"
 //	file "geometries/teapot_hires.obj"
 //	useKDTree true
+//  faceted false
+//  backCulling false
+//}
+
+Mesh gas_station {
+	useKDTree true
+//  file "geometries/1-low.obj"
+    file "geometries/Gas-and-oil-pumps_high.obj"
+    faceted false
+    backCulling false
 }
 
-Node teapot {
-	geometry    teapot
-	shader      teapot_tex
-	rotate		(0, 0, 0)
-	scale       (60, 60, 60)
+Refl refl2 {
+	multiplier 0.85
+}
+
+Refr refr2 {
+	ior	1.6
+	multiplier 0.95
+}
+
+Fresnel fresnel2 {
+	ior 1.6
+}
+
+Layered glass2 {
+	layer refr2 (1, 1, 1)
+	layer refl2 (1, 1, 1) fresnel2
+}
+
+Node gas_station {
+    geometry    gas_station
+    shader      glass2
+    rotate		(-90, 0, 0)
+    scale       (15, 15, 15)
+    shadowTransparency 0.75
+}
+
+//Node teapot {
+//	geometry    teapot
+//	shader      teapot_tex
+//	scale       (15, 15, 15)
+//}
+
+CubemapEnvironment {
+	folder "env/ocean"
+	useBilinearFiltering true
 }

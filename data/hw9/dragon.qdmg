@@ -8,6 +8,7 @@ GlobalSettings {
 	frameWidth          768
 	frameHeight         512
 	ambientLight        (0.28, 0.30, 0.35)
+	wantAA              false
 }
 
 Light {
@@ -87,4 +88,5 @@ Node dragonNode {
 // 5. The cubemap environment:
 CubemapEnvironment environment {
 	folder "../env/forest"
+	useBilinearFiltering true
 }
