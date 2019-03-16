@@ -32,6 +32,7 @@ public:
 
     virtual void FillProperties(ParsedBlock& pb) override;
     virtual void BeginRender() override;
+    virtual void EndRender() override;
 
 private:
     std::vector<Vector> m_Vertices;
@@ -41,6 +42,7 @@ private:
     BBox m_BBox;
 
     bool m_UseKDTree = true;
+    bool m_UseSAH = false;
     KDTreeNode* m_KDRoot = nullptr;
 
     bool m_Faceted = true;
@@ -55,8 +57,18 @@ private:
     void ComputeBoundingGeometry();
 
     void ComputeKDRoot();
-    void BuildKD(KDTreeNode* node, BBox bbox, const std::vector<int>& triangleList, unsigned int depth) const;
-    void BuildKDNodeChildren(KDTreeNode* node, const BBox& bbox, const std::vector<int>& triangleList, unsigned int depth) const;
+    void BuildKD(KDTreeNode* node, const BBox& bbox, const std::vector<unsigned>& triangleList, unsigned depth) const;
+
+    enum class KDPosition
+    {
+        Before,
+        After,
+        Intersection
+    };
+    KDPosition PartitionTriangle(const unsigned tidx , const Axis axis, const double position) const;
+    double CalculateCost(const Axis axis, const double position, const std::vector<unsigned>& triangleList, const BBox& leftBox, const BBox& rightBox) const;
+    double CalculateSingleVoxelCost(const BBox& bbox, const std::vector<unsigned>& triangleList) const;
+    bool FindOptimalSplitPosition(const BBox& bbox, const std::vector<unsigned>& triangleList, const unsigned depth, double& outSplitPosition, Axis& outSplitAxis) const;
 };
 
 

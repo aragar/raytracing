@@ -1,5 +1,6 @@
 #include "mesh.h"
 
+#include <cassert>
 #include <numeric>
 #include <SDL.h>
 
@@ -15,6 +16,17 @@ Mesh::~Mesh()
         delete m_KDRoot;
 }
 
+// some debug information
+unsigned nbTriIntersections = 0;
+unsigned nbBBoxIntersections = 0;
+unsigned nbIntersections = 0;
+
+unsigned maxDepth = 0;
+unsigned depths = 0;
+unsigned nbLeaves = 0;
+unsigned nbTriangles = 0;
+// end some debug information
+
 bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
 {
     if (!m_BBox.TestIntersect(ray))
@@ -23,6 +35,8 @@ bool Mesh::Intersect(const Ray& ray, IntersectionInfo& outInfo) const
     bool found = false;
     if (m_KDRoot)
     {
+        ++nbIntersections;
+
         outInfo.distance = INF;
         found = Intersect(m_KDRoot, m_BBox, ray, outInfo);
     }
@@ -47,7 +61,7 @@ bool Mesh::Intersect(KDTreeNode* node, BBox bbox, const Ray& ray, IntersectionIn
     if (node->IsLeaf())
     {
         bool found = false;
-        for (int triangleIdx : *node->triangles)
+        for (const unsigned triangleIdx : *node->triangles)
             if (Intersect(ray, m_Triangles[triangleIdx], outInfo))
                 found = true;
 
@@ -64,6 +78,7 @@ bool Mesh::Intersect(KDTreeNode* node, BBox bbox, const Ray& ray, IntersectionIn
 
         for (unsigned i = 0; i < COUNT_OF(childBBoxes); ++i)
         {
+            ++nbBBoxIntersections;
             const BBox& childBBox = childBBoxes[childOrder[i]];
             if (childBBox.TestIntersect(ray) && Intersect(&node->children[childOrder[i]], childBBox, ray, outInfo))
             {
@@ -97,6 +112,8 @@ bool Mesh::Intersect(const Ray& ray, const MeshTriangle& triangle, IntersectionI
 {
     if (m_BackCulling && ray.dir * triangle.geometryNormal > 0)
         return false;
+
+    ++nbTriIntersections;
 
     const Vector& A = m_Vertices[triangle.vertices[0]];
     const Vector& B = m_Vertices[triangle.vertices[1]];
@@ -155,6 +172,7 @@ void Mesh::FillProperties(ParsedBlock& pb)
     pb.GetBoolProp("faceted", &m_Faceted);
     pb.GetBoolProp("backCulling", &m_BackCulling);
     pb.GetBoolProp("useKDTree", &m_UseKDTree);
+    pb.GetBoolProp("useSAH", &m_UseSAH);
 
     pb.RequiredProp("file");
 
@@ -171,6 +189,12 @@ void Mesh::BeginRender()
     ComputeKDRoot();
 }
 
+void Mesh::EndRender()
+{
+    printf("Avg bbox intersections: %lf\n", (double)nbBBoxIntersections / nbIntersections);
+    printf("Avg triangles intersections: %lf\n", (double)nbTriIntersections / nbIntersections);
+}
+
 void Mesh::ComputeKDRoot()
 {
     if (!m_UseKDTree || m_Triangles.size() < 50)
@@ -179,56 +203,232 @@ void Mesh::ComputeKDRoot()
     const Uint32 start = SDL_GetTicks();
 
     m_KDRoot = new KDTreeNode;
-    std::vector<int> triangleList(m_Triangles.size());
+    std::vector<unsigned> triangleList(m_Triangles.size());
     std::iota(triangleList.begin(), triangleList.end(), 0);
     BuildKD(m_KDRoot, m_BBox, triangleList, 0);
 
     const Uint32 end = SDL_GetTicks();
     printf(" -> KDTree built in %.2lfs\n", (end - start) / 1000.0);
+    printf("max depth: %2u avg depth: %lf\n", maxDepth, (double)depths / nbLeaves);
+    printf("nb leaves: %2u avg triangles: %lf\n", nbLeaves, (double)nbTriangles / nbLeaves);
 }
 
-void Mesh::BuildKD(KDTreeNode* node, BBox bbox, const std::vector<int>& triangleList, unsigned int depth) const
+void Mesh::BuildKD(KDTreeNode* node, const BBox& bbox, const std::vector<unsigned>& triangleList, unsigned depth) const
 {
     if (depth > MAX_TREE_DEPTH || triangleList.size() < TRIANGLES_PER_LEAF)
     {
+        ++nbLeaves;
+        maxDepth = std::max(maxDepth, depth);
+        depths += depth;
+        nbTriangles += triangleList.size();
+
         node->InitLeaf(triangleList);
+        return;
+    }
+
+    Axis splitAxis = Axis::None;
+    double splitPosition = 0;
+
+    if (FindOptimalSplitPosition(bbox, triangleList, depth, splitPosition, splitAxis))
+    {
+        BBox leftBBox, rightBBox;
+        bbox.Split(splitAxis, splitPosition, leftBBox, rightBBox);
+        std::vector<unsigned> trianglesLeft, trianglesRight;
+        for (unsigned triangleIdx : triangleList)
+        {
+            const Mesh::KDPosition position = PartitionTriangle(triangleIdx, splitAxis, splitPosition);
+            switch (position)
+            {
+            case Mesh::KDPosition::Before:
+                trianglesLeft.push_back(triangleIdx);
+                break;
+            case Mesh::KDPosition::After:
+                trianglesRight.push_back(triangleIdx);
+                break;
+            case Mesh::KDPosition::Intersection:
+                trianglesLeft.push_back(triangleIdx);
+                trianglesRight.push_back(triangleIdx);
+                break;
+            default:
+                assert(false);
+            }
+        }
+
+        node->InitTreeNode(splitAxis, splitPosition);
+        BuildKD(&node->children[0], leftBBox, trianglesLeft, depth + 1);
+        BuildKD(&node->children[1], rightBBox, trianglesRight, depth + 1);
     }
     else
     {
-        BuildKDNodeChildren(node, bbox, triangleList, depth);
+        ++nbLeaves;
+        maxDepth = std::max(maxDepth, depth);
+        depths += depth;
+        nbTriangles += triangleList.size();
+
+        node->InitLeaf(triangleList);
     }
 }
 
-void Mesh::BuildKDNodeChildren(KDTreeNode* node, const BBox& bbox, const std::vector<int>& triangleList, unsigned int depth) const
+Axis FindOptimalSlplitAxis(const BBox& bbox)
 {
-    const Axis axis = static_cast<Axis>(depth % 3);
-    const double leftLimit = bbox.GetMin(axis);
-    const double rightLimit = bbox.GetMax(axis);
+    const Vector& max = bbox.GetMax();
+    const Vector& min = bbox.GetMin();
+    const double xDiff = std::abs(max.x - min.x);
+    const double yDiff = std::abs(max.y - min.y);
+    const double zDiff = std::abs(max.z - min.y);
 
-    const double optimalSplitPosition = (leftLimit + rightLimit) * 0.5; // TODO: could be better
-
-    BBox bboxLeft, bboxRight;
-    bbox.Split(axis, optimalSplitPosition, bboxLeft, bboxRight);
-
-    std::vector<int> trianglesLeft, trianglesRight;
-    for (int triangleIdx : triangleList)
+    if (xDiff > yDiff)
     {
-        const MeshTriangle& triangle = m_Triangles[triangleIdx];
-        const Vector& A = m_Vertices[triangle.vertices[0]];
-        const Vector& B = m_Vertices[triangle.vertices[1]];
-        const Vector& C = m_Vertices[triangle.vertices[2]];
+        if (xDiff > zDiff)  return Axis::X;
+        else                return Axis::Z;
+    }
+    else if (yDiff > zDiff) return Axis::Y;
+    else                    return Axis::Z;
+}
 
-        if (bboxLeft.IntersectTriangle(A, B, C))
-            trianglesLeft.push_back(triangleIdx);
+void FindExtremes(Axis axis, const Vector& A, const Vector& B, const Vector& C, double extremes[2])
+{
+    switch (axis)
+    {
+        case Axis::X: extremes[0] = Min(A.x, B.x, C.x); extremes[1] = Max(A.x, B.x, C.x); break;
+        case Axis::Y: extremes[0] = Min(A.y, B.y, C.y); extremes[1] = Max(A.y, B.y, C.y); break;
+        case Axis::Z: extremes[0] = Min(A.z, B.z, C.z); extremes[1] = Max(A.z, B.z, C.z); break;
+        default: assert(false);
+    }
+}
 
-        if (bboxRight.IntersectTriangle(A, B, C))
-            trianglesRight.push_back(triangleIdx);
+bool Mesh::FindOptimalSplitPosition(const BBox& bbox, const std::vector<unsigned>& triangleList, const unsigned depth, double& outSplitPosition, Axis& outSplitAxis) const
+{
+    bool foundSplit = false;
+    if (!m_UseSAH)
+    {
+        outSplitAxis = static_cast<Axis>(depth % 3);
+        outSplitPosition = (bbox.GetMin(outSplitAxis) + bbox.GetMax(outSplitAxis)) / 2;
+        foundSplit = true;
+    }
+    else
+    {
+        outSplitAxis = FindOptimalSlplitAxis(bbox);
+        // const double noSplitCost = CalculateSingleVoxelCost(bbox, triangleList);
+        double bestCost = CalculateSingleVoxelCost(bbox, triangleList);
+        // double bestCost = INF;
+
+        BBox leftBox, rightBox;
+
+        //double left = bbox.GetMin(outSplitAxis);
+        //double right = bbox.GetMax(outSplitAxis);
+        //while (!AreEqual(left, right, 0.000001))
+        //for (unsigned tidx : triangleList)
+        const double left = bbox.GetMin(outSplitAxis);
+        const double right = bbox.GetMax(outSplitAxis);
+        const double step = (right - left) / 10.;
+        for (double splitPosition = left; splitPosition < right; splitPosition += step)
+        {
+            //printf("l: %lf r:%lf\n", left, right);
+            //double m1 = left + (right - left)/3;
+            //double m2 = right - (right - left)/3;
+
+            bbox.Split(outSplitAxis, splitPosition, leftBox, rightBox);
+            const double splitCost = CalculateCost(outSplitAxis, splitPosition, triangleList, leftBox, rightBox);
+            if (splitCost < bestCost)
+            {
+                foundSplit = true;
+                bestCost = splitCost;
+                outSplitPosition = splitPosition;
+            }
+
+//            const MeshTriangle& t = m_Triangles[tidx];
+//            const double m1 = Min(m_Vertices[t.vertices[0]][static_cast<unsigned>(outSplitAxis)], m_Vertices[t.vertices[1]][static_cast<unsigned>(outSplitAxis)], m_Vertices[t.vertices[2]][static_cast<unsigned>(outSplitAxis)]);
+//            const double m2 = Max(m_Vertices[t.vertices[0]][static_cast<unsigned>(outSplitAxis)], m_Vertices[t.vertices[1]][static_cast<unsigned>(outSplitAxis)], m_Vertices[t.vertices[2]][static_cast<unsigned>(outSplitAxis)]);
+//
+//            bbox.Split(outSplitAxis, m1, leftBox, rightBox);
+//            const double m1Cost = CalculateCost(outSplitAxis, m1, triangleList, leftBox, rightBox);
+//            if (m1Cost < bestCost)
+//            {
+//                foundSplit = true;
+//                bestCost = m1Cost;
+//                outSplitPosition = m1;
+//            }
+//
+//            bbox.Split(outSplitAxis, m2, leftBox, rightBox);
+//            const double m2Cost = CalculateCost(outSplitAxis, m2, triangleList, leftBox, rightBox);
+//            if (m2Cost < bestCost)
+//            {
+//                foundSplit = true;
+//                bestCost = m2Cost;
+//                outSplitPosition = m2;
+//            }
+
+            //if (m1Cost < m2Cost) right = m2;
+            //else left = m1;
+        }
+        //printf("\n\n");
+
+        //outSplitPositoin = (left + right) / 2;
+        //bbox.Split(outSplitAxis, outSplitPositoin, leftBox, rightBox);
+        //const double splitCost = CalculateCost(outSplitAxis, outSplitPositoin, triangleList, leftBox, rightBox);
+
+        //return (splitCost < currentCost);
     }
 
-    node->InitTreeNode(axis, optimalSplitPosition);
+    return foundSplit;
+}
 
-    BuildKD(&node->children[0], bboxLeft, trianglesLeft, depth + 1);
-    BuildKD(&node->children[1], bboxRight, trianglesRight, depth + 1);
+double Mesh::CalculateSingleVoxelCost(const BBox& bbox, const std::vector<unsigned>& triangleList) const
+{
+    const double area = bbox.GetArea();
+    const unsigned triangles = triangleList.size();
+    return (area*triangles*COST_INTERSECT);
+}
+
+double Mesh::CalculateCost(const Axis axis, const double position, const std::vector<unsigned>& triangleList, const BBox& leftBox, const BBox& rightBox) const
+{
+    const double leftArea = leftBox.GetArea();
+    const double rightArea = rightBox.GetArea();
+
+    unsigned leftTriangles = 0;
+    unsigned rightTriangles = 0;
+    for (const unsigned t : triangleList)
+    {
+        Mesh::KDPosition kdPosition = PartitionTriangle(t, axis, position);
+        switch (kdPosition)
+        {
+            case Mesh::KDPosition::Before:
+                ++leftTriangles;
+                break;
+            case Mesh::KDPosition::After:
+                ++rightTriangles;
+                break;
+            case Mesh::KDPosition::Intersection:
+                ++leftTriangles;
+                ++rightTriangles;
+                break;
+        }
+    }
+
+    return (COST_TRAVERSAL + leftArea*leftTriangles*COST_INTERSECT + rightArea*rightTriangles*COST_INTERSECT);
+}
+
+Mesh::KDPosition Mesh::PartitionTriangle(const unsigned tidx, const Axis axis, const double position) const
+{
+    unsigned befores = 0;
+    unsigned afters = 0;
+    const unsigned pos = static_cast<unsigned>(axis);
+
+    const MeshTriangle& triangle = m_Triangles[tidx];
+    for (int v : triangle.vertices)
+    {
+        if (m_Vertices[v][pos] < position)       ++befores;
+        else if (m_Vertices[v][pos] > position)  ++afters;
+    }
+
+    if (befores > 0)
+    {
+        if (afters > 0) return Mesh::KDPosition::Intersection;
+        else            return Mesh::KDPosition::Before;
+    }
+    else if (afters > 0)return Mesh::KDPosition::After;
+    else                return Mesh::KDPosition::Intersection;
 }
 
 static void ParseOBJTrio(const std::string& s, int& vertex, int& uv, int& normal)

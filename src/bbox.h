@@ -28,6 +28,8 @@ public:
     double GetMax(Axis axis) const { return m_Max.v[static_cast<int>(axis)]; }
     void SetMax(const Vector& max) { m_Max = max; }
 
+    double GetArea() const;
+
     void MakeEmpty();
     void Add(const Vector& point);
 

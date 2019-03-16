@@ -12,5 +12,7 @@ const double INF = 1e99;
 
 const unsigned MAX_TREE_DEPTH = 64;
 const unsigned TRIANGLES_PER_LEAF = 20;
+const double COST_TRAVERSAL = 0.3;
+const double COST_INTERSECT = 1.;
 
 #endif //RAYTRACING_CONSTANTS_H

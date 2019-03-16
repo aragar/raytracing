@@ -201,3 +201,10 @@ void BBox::Split(Axis axis, double where, BBox& left, BBox& right) const
     right = *this;
     right.m_Min[index] = where;
 }
+
+double BBox::GetArea() const
+{
+    double result = 2.*(m_Max.x - m_Min.x)*(m_Max.y - m_Min.y)*(m_Max.z - m_Min.z);
+    result = std::abs(result);
+    return result;
+}

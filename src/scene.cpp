@@ -834,6 +834,20 @@ void Scene::BeginFrame()
         environment->BeginFrame();
 }
 
+void Scene::EndRender()
+{
+    if (environment)
+        environment->EndRender();
+    settings.EndRender();
+    camera->EndRender();
+    for (auto& element: lights) element->EndRender();
+    for (auto& element: nodes) element->EndRender();
+    for (auto& element: superNodes) element->EndRender();
+    for (auto& element: shaders) element->EndRender();
+    for (auto& element: textures) element->EndRender();
+    for (auto& element: geometries) element->EndRender();
+}
+
 void GlobalSettings::FillProperties(ParsedBlock& pb)
 {
     pb.GetIntProp("frameWidth", &frameWidth);

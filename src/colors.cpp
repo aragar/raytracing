@@ -13,4 +13,5 @@ const Color Colors::BLACK = Color{0, 0, 0};
 const Color Colors::GRAY = Color{0.5, 0.5, 0.5};
 const Color Colors::SILVER = Color{0.75, 0.75, 0.75};
 
+const Color Colors::BLUE = Color{0, 0, 1};
 const Color Colors::NAVY = Color{0, 0, 0.5};

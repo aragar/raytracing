@@ -19,6 +19,7 @@ public:
     static const Color GRAY;
     static const Color SILVER;
 
+    static const Color BLUE;
     static const Color NAVY;
 };
 

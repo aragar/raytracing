@@ -21,6 +21,8 @@ inline double ToDegrees(const double angle) { return angle / PI * 180.; }
 
 inline int NearestInt(const double x) { return (int) floor(x + 0.5); }
 
+inline double Min(const double a, const double b, const double c) { return std::min(std::min(a, b), c); }
+inline double Max(const double a, const double b, const double c) { return std::max(std::max(a, b), c); }
 inline float Max(const float a, const float b, const float c, const float d) { return std::max(std::max(a, b), std::max(c, d)); }
 inline double Clamp(const double x, const double a, const double b) { return std::min(std::max(x, a), b); }
 inline int Clamp(const int x, const int a, const int b) { return std::min(std::max(x, a), b); }

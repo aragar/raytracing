@@ -93,6 +93,11 @@ public:
      */
     virtual void BeginFrame() {}
 
+    /**
+     * @brief a callback that gets called after the rendering ends
+     */
+    virtual void EndRender() {}
+
     friend class SceneParser;
 };
 
@@ -267,6 +272,7 @@ struct Scene
     bool ParseScene(const char* sceneFile); //!< Parses a scene file and loads the scene from it. Returns true on success.
     void BeginRender(); //!< Notifies the scene so that a render is about to begin. It calls the BeginRender() method of all scene elements
     void BeginFrame(); //!< Notifies the scene so that a new frame is about to begin. It calls the BeginFrame() method of all scene elements
+    void EndRender(); //!< Notified the scene so that a render has just ended. It calls the EndRender() method of all scene elements
 };
 
 extern Scene scene;

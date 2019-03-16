@@ -204,6 +204,8 @@ int main (int argc, char* argv[])
 
 //    }
 
+    scene.EndRender();
+
     WaitForUserExit();
     CloseGraphics();
 
